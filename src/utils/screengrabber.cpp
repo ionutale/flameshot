@@ -21,6 +21,7 @@
 #include <QTimer>
 #include <QWidget>
 #include <algorithm>
+#include <limits>
 
 #ifdef FLAMESHOT_DEBUG_CAPTURE
 #include <QDebug>
@@ -472,31 +473,24 @@ QPixmap ScreenGrabber::cropToMonitor(const QPixmap& fullScreenshot,
     cropY = qRound((targetGeometry.y() - minY) * screenshotScaleY);
     cropWidth = qRound(targetGeometry.width() * screenshotScaleX);
     cropHeight = qRound(targetGeometry.height() * screenshotScaleY);
-#else
-    // Windows: Calculate physical pixel positions for mixed DPI
-    cropX = 0;
-    cropY = 0;
-
-    for (QScreen* screen : screens) {
-        QRect geom = screen->geometry();
-        qreal dpr = screen->devicePixelRatio();
-
-        // Sum physical widths of screens completely to the left
-        if (geom.x() + geom.width() <= targetGeometry.x()) {
-            cropX += qRound(geom.width() * dpr);
-        }
-
-        // Sum physical heights of screens completely above
-        if (geom.y() + geom.height() <= targetGeometry.y()) {
-            cropY += qRound(geom.height() * dpr);
-        }
+#elif defined(Q_OS_WIN)
+    QRect cropRect = m_windowsScreenPhysicalRects.value(targetScreen);
+    if (cropRect.isNull()) {
+        cropRect = QRect(targetGeometry.x() - minX,
+                         targetGeometry.y() - minY,
+                         qRound(targetGeometry.width() * targetDpr),
+                         qRound(targetGeometry.height() * targetDpr));
     }
 
-    cropWidth = qRound(targetGeometry.width() * targetDpr);
-    cropHeight = qRound(targetGeometry.height() * targetDpr);
+    cropX = cropRect.x();
+    cropY = cropRect.y();
+    cropWidth = cropRect.width();
+    cropHeight = cropRect.height();
 
 #ifdef FLAMESHOT_DEBUG_CAPTURE
-    qDebug() << tr("Calculated crop position for mixed DPI: X=%1 Y=%2")
+    qDebug() << tr("Using cached Windows crop rect: %1x%2+%3+%4")
+                  .arg(cropWidth)
+                  .arg(cropHeight)
                   .arg(cropX)
                   .arg(cropY);
 #endif
@@ -556,7 +550,18 @@ QPixmap ScreenGrabber::cropToMonitor(const QPixmap& fullScreenshot,
 QPixmap ScreenGrabber::windowsScreenshot(int wid)
 {
     const QList<QScreen*> screens = QGuiApplication::screens();
-    QRect geometry = desktopGeometry();
+    int minPhysicalX = std::numeric_limits<int>::max();
+    int minPhysicalY = std::numeric_limits<int>::max();
+
+    for (QScreen* screen : screens) {
+        const QRect screenGeom = screen->geometry();
+        minPhysicalX = qMin(minPhysicalX, screenGeom.x());
+        minPhysicalY = qMin(minPhysicalY, screenGeom.y());
+    }
+
+    if (minPhysicalX == std::numeric_limits<int>::max()) {
+        return QPixmap();
+    }
 
     int canvasWidth = 0;
     int canvasHeight = 0;
@@ -569,49 +574,49 @@ QPixmap ScreenGrabber::windowsScreenshot(int wid)
         QPixmap pixmap;
     };
     QMap<QScreen*, ScreenInfo> screenInfos;
-
-    int minLogicalX = geometry.x();
-    int minLogicalY = geometry.y();
+    m_windowsScreenPhysicalRects.clear();
 
     for (QScreen* screen : screens) {
-        QRect screenGeom = screen->geometry();
-        qreal screenDpr = screen->devicePixelRatio();
+        const QRect screenGeom = screen->geometry();
+        const qreal screenDpr = screen->devicePixelRatio();
 
         QPixmap screenPixmap = screen->grabWindow(wid);
         screenPixmap.setDevicePixelRatio(1.0);
 
-        int logicalX = screenGeom.x() - minLogicalX;
-        int logicalY = screenGeom.y() - minLogicalY;
-
-        int physicalWidth = screenPixmap.width();
-        int physicalHeight = screenPixmap.height();
-
-        int physicalX = 0;
-        int physicalY = 0;
-
-        for (QScreen* otherScreen : screens) {
-            QRect otherGeom = otherScreen->geometry();
-            qreal otherDpr = otherScreen->devicePixelRatio();
-
-            // If this screen is entirely to the left of current screen
-            if (otherGeom.x() + otherGeom.width() <= screenGeom.x()) {
-                physicalX += qRound(otherGeom.width() * otherDpr);
-            }
-
-            // If this screen is entirely above the current screen
-            if (otherGeom.y() + otherGeom.height() <= screenGeom.y()) {
-                physicalY += qRound(otherGeom.height() * otherDpr);
-            }
-        }
+        const int physicalWidth = screenPixmap.width();
+        const int physicalHeight = screenPixmap.height();
+        const int physicalX = screenGeom.x() - minPhysicalX;
+        const int physicalY = screenGeom.y() - minPhysicalY;
 
         ScreenInfo info;
         info.physicalRect =
           QRect(physicalX, physicalY, physicalWidth, physicalHeight);
         info.pixmap = screenPixmap;
         screenInfos[screen] = info;
+        m_windowsScreenPhysicalRects.insert(screen, info.physicalRect);
 
         canvasWidth = qMax(canvasWidth, physicalX + physicalWidth);
         canvasHeight = qMax(canvasHeight, physicalY + physicalHeight);
+
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+        qDebug() << tr("Windows screen %1: %2")
+                      .arg(screens.indexOf(screen))
+                      .arg(screen->name());
+        qDebug() << tr("  Logical geometry: %1x%2+%3+%4 DPR: %5")
+                      .arg(screenGeom.width())
+                      .arg(screenGeom.height())
+                      .arg(screenGeom.x())
+                      .arg(screenGeom.y())
+                      .arg(screenDpr);
+        qDebug() << tr("  Grabbed pixmap: %1x%2")
+                      .arg(physicalWidth)
+                      .arg(physicalHeight);
+        qDebug() << tr("  Physical rect: %1x%2+%3+%4")
+                      .arg(info.physicalRect.width())
+                      .arg(info.physicalRect.height())
+                      .arg(info.physicalRect.x())
+                      .arg(info.physicalRect.y());
+#endif
     }
 
     // Composite all screens onto canvas

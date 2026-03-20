@@ -6,6 +6,7 @@
 #include "src/utils/desktopinfo.h"
 #include <QEvent>
 #include <QList>
+#include <QMap>
 #include <QObject>
 #include <QPixmap>
 #include <QScreen>
@@ -43,5 +44,6 @@ private:
     int m_selectedMonitor;
     QEventLoop* m_monitorSelectionLoop;
     bool m_userCancelled;
+    QMap<QScreen*, QRect> m_windowsScreenPhysicalRects;
     static bool m_monitorSelectionActive;
 };

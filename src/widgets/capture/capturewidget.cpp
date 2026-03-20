@@ -38,6 +38,10 @@
 #include <QWindow>
 #include <draggablewidgetmaker.h>
 
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+#include <QDebug>
+#endif
+
 #if !defined(DISABLE_UPDATE_CHECKER)
 #include "src/widgets/updatenotificationwidget.h"
 #endif
@@ -309,6 +313,30 @@ CaptureWidget::~CaptureWidget()
         setLastRegion(lastRegion);
         QRect geometry(m_context.selection);
         geometry.setTopLeft(geometry.topLeft() + m_context.widgetOffset);
+
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+                qDebug() << tr("Capture export details:");
+                qDebug() << tr("  Screenshot DPR: %1").arg(scale);
+                qDebug() << tr("  Selection widget geometry: %1x%2+%3+%4")
+                                            .arg(m_selection->geometry().width())
+                                            .arg(m_selection->geometry().height())
+                                            .arg(m_selection->geometry().x())
+                                            .arg(m_selection->geometry().y());
+                qDebug() << tr("  Selection in screenshot pixels: %1x%2+%3+%4")
+                                            .arg(m_context.selection.width())
+                                            .arg(m_context.selection.height())
+                                            .arg(m_context.selection.x())
+                                            .arg(m_context.selection.y());
+                qDebug() << tr("  Widget offset: %1,%2")
+                                            .arg(m_context.widgetOffset.x())
+                                            .arg(m_context.widgetOffset.y());
+                qDebug() << tr("  Export geometry: %1x%2+%3+%4")
+                                            .arg(geometry.width())
+                                            .arg(geometry.height())
+                                            .arg(geometry.x())
+                                            .arg(geometry.y());
+#endif
+
         Flameshot::instance()->exportCapture(
           pixmap(), geometry, m_context.request);
     } else {
@@ -1160,6 +1188,13 @@ void CaptureWidget::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
     m_context.widgetOffset = mapToGlobal(QPoint(0, 0));
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+    qDebug() << tr("Capture widget resized: %1x%2 offset %3,%4")
+                  .arg(width())
+                  .arg(height())
+                  .arg(m_context.widgetOffset.x())
+                  .arg(m_context.widgetOffset.y());
+#endif
     if (!m_context.fullscreen) {
         m_panel->setFixedHeight(height());
         m_buttonHandler->updateScreenRegions(rect());
@@ -1170,6 +1205,11 @@ void CaptureWidget::moveEvent(QMoveEvent* e)
 {
     QWidget::moveEvent(e);
     m_context.widgetOffset = mapToGlobal(QPoint(0, 0));
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+    qDebug() << tr("Capture widget moved: offset %1,%2")
+                  .arg(m_context.widgetOffset.x())
+                  .arg(m_context.widgetOffset.y());
+#endif
 }
 
 void CaptureWidget::changeEvent(QEvent* e)
@@ -1192,6 +1232,13 @@ void CaptureWidget::initContext(bool fullscreen, const CaptureRequest& req)
 
     // initialize m_context.request
     m_context.request = req;
+
+#ifdef FLAMESHOT_DEBUG_CAPTURE
+    qDebug() << tr("Capture context initialized: fullscreen=%1 offset=%2,%3")
+                  .arg(fullscreen)
+                  .arg(m_context.widgetOffset.x())
+                  .arg(m_context.widgetOffset.y());
+#endif
 }
 
 void CaptureWidget::initPanel()
