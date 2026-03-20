@@ -474,18 +474,18 @@ QPixmap ScreenGrabber::cropToMonitor(const QPixmap& fullScreenshot,
     cropWidth = qRound(targetGeometry.width() * screenshotScaleX);
     cropHeight = qRound(targetGeometry.height() * screenshotScaleY);
 #elif defined(Q_OS_WIN)
-    QRect cropRect = m_windowsScreenPhysicalRects.value(targetScreen);
-    if (cropRect.isNull()) {
-        cropRect = QRect(targetGeometry.x() - minX,
-                         targetGeometry.y() - minY,
-                         qRound(targetGeometry.width() * targetDpr),
-                         qRound(targetGeometry.height() * targetDpr));
+    QRect windowsCropRect = m_windowsScreenPhysicalRects.value(targetScreen);
+    if (windowsCropRect.isNull()) {
+        windowsCropRect = QRect(targetGeometry.x() - minX,
+                                targetGeometry.y() - minY,
+                                qRound(targetGeometry.width() * targetDpr),
+                                qRound(targetGeometry.height() * targetDpr));
     }
 
-    cropX = cropRect.x();
-    cropY = cropRect.y();
-    cropWidth = cropRect.width();
-    cropHeight = cropRect.height();
+    cropX = windowsCropRect.x();
+    cropY = windowsCropRect.y();
+    cropWidth = windowsCropRect.width();
+    cropHeight = windowsCropRect.height();
 
 #ifdef FLAMESHOT_DEBUG_CAPTURE
     qDebug() << tr("Using cached Windows crop rect: %1x%2+%3+%4")
