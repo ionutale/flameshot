@@ -143,6 +143,9 @@ public:
     CONFIG_GETTER_SETTER(ignorePrntScrForcesSnipping,
                          setIgnorePrntScrForcesSnipping,
                          bool)
+    CONFIG_GETTER_SETTER(captureActiveScreenOnly,
+                         setCaptureActiveScreenOnly,
+                         bool)
 #endif
 
     // SPECIAL CASES

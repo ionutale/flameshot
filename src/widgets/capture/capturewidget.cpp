@@ -116,11 +116,19 @@ CaptureWidget::CaptureWidget(const CaptureRequest& req,
 #endif
     if (fullScreen) {
         bool ok = true;
-        int preSelectedMonitor;
+        int preSelectedMonitor = -1;
         if (req.hasSelectedMonitor()) {
             preSelectedMonitor = req.selectedMonitor();
         } else {
-            preSelectedMonitor = -1;
+#if defined(Q_OS_WIN)
+            if (ConfigHandler().captureActiveScreenOnly()) {
+                QScreen* curr = QGuiAppCurrentScreen().currentScreen();
+                if (curr) {
+                    auto screens = QGuiApplication::screens();
+                    preSelectedMonitor = screens.indexOf(curr);
+                }
+            }
+#endif
         }
         m_context.screenshot =
           grabber.grabEntireDesktop(ok, preSelectedMonitor);
