@@ -141,6 +141,7 @@ static QMap<class QString, QSharedPointer<ValueHandler>>
 #if defined(Q_OS_WIN)
     // Not visible on settings dialog
     OPTION("ignorePrntScrForcesSnipping" ,Bool               ( false         )),
+    OPTION("captureActiveScreenOnly"     ,Bool               ( false         )),
 #endif
 #if !defined(Q_OS_MACOS)
     // Auto-select the monitor under the cursor instead of showing

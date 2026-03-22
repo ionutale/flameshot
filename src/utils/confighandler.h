@@ -148,6 +148,9 @@ public:
     CONFIG_GETTER_SETTER(ignorePrntScrForcesSnipping,
                          setIgnorePrntScrForcesSnipping,
                          bool)
+    CONFIG_GETTER_SETTER(captureActiveScreenOnly,
+                         setCaptureActiveScreenOnly,
+                         bool)
 #endif
 #if !defined(Q_OS_MACOS)
     CONFIG_GETTER_SETTER(captureActiveMonitor, setCaptureActiveMonitor, bool)

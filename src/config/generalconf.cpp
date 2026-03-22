@@ -113,6 +113,12 @@ void GeneralConf::_updateComponents(bool allowEmptySavePath)
     m_squareMagnifier->setChecked(config.squareMagnifier());
     m_saveLastRegion->setChecked(config.saveLastRegion());
     m_reverseArrow->setChecked(config.reverseArrow());
+    m_insecurePixelate->setChecked(config.insecurePixelate());
+#if defined(Q_OS_WIN)
+    m_captureActiveScreenOnly->setChecked(config.captureActiveScreenOnly());
+#endif
+
+#if !defined(Q_OS_WIN)
     m_autoCloseIdleDaemon->setChecked(config.autoCloseIdleDaemon());
     m_predefinedColorPaletteLarge->setChecked(
       config.predefinedColorPaletteLarge());
@@ -878,6 +884,27 @@ void GeneralConf::initInsecurePixelate()
             this,
             &GeneralConf::setInsecurePixelate);
 }
+
+#if defined(Q_OS_WIN)
+void GeneralConf::initCaptureActiveScreenOnly()
+{
+    m_captureActiveScreenOnly = new QCheckBox(tr("Capture only active screen"), this);
+    m_captureActiveScreenOnly->setToolTip(
+      tr("Limit screenshot to the screen containing the mouse cursor."));
+    m_captureActiveScreenOnly->setChecked(ConfigHandler().captureActiveScreenOnly());
+    m_scrollAreaLayout->addWidget(m_captureActiveScreenOnly);
+
+    connect(m_captureActiveScreenOnly,
+            &QCheckBox::clicked,
+            this,
+            &GeneralConf::captureActiveScreenOnlyChanged);
+}
+
+void GeneralConf::captureActiveScreenOnlyChanged(bool checked)
+{
+    ConfigHandler().setCaptureActiveScreenOnly(checked);
+}
+#endif
 
 void GeneralConf::setSelGeoHideTime(int v)
 {
