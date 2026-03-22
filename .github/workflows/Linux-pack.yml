@@ -5,6 +5,8 @@ on:
     branches:
       - master
       - fix*
+    tags:
+      - 'v*'
     paths-ignore:
       - 'README.md'
       - 'LICENSE'
