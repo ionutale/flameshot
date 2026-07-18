@@ -53,6 +53,7 @@ void AbstractActionTool::drawStart(const CaptureContext& context)
 void AbstractActionTool::onColorChanged(const QColor& c)
 {
     Q_UNUSED(c)
+    markRenderCacheDirty();
 }
 
 void AbstractActionTool::onSizeChanged(int size)

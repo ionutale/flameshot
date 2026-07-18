@@ -112,6 +112,7 @@ void AbstractTwoPointTool::drawMoveWithAdjustment(const QPoint& p)
 void AbstractTwoPointTool::onColorChanged(const QColor& c)
 {
     m_color = c;
+    markRenderCacheDirty();
 }
 
 void AbstractTwoPointTool::onSizeChanged(int size)

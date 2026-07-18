@@ -516,7 +516,9 @@ void CaptureWidget::ensureGridCache()
 
     QRect gridRect(topLeft, QPoint(m_context.selection.right() / scale,
                                    m_context.selection.bottom() / scale));
-    m_gridCache = QPixmap(gridRect.size());
+    auto cacheSize = gridRect.size() * scale;
+    m_gridCache = QPixmap(cacheSize);
+    m_gridCache.setDevicePixelRatio(scale);
     m_gridCache.fill(Qt::transparent);
 
     QPainter painter(&m_gridCache);
@@ -1930,12 +1932,20 @@ void CaptureWidget::pushToolToStack()
 
 void CaptureWidget::drawToolsData(bool drawSelection)
 {
-    // TODO refactor this for performance. The objects should not all be updated
-    // at once every time
     QPixmap pixmapItem = m_context.origScreenshot;
+
+    bool cascadeDirty = false;
     for (const auto& toolItem : m_captureToolObjects.captureToolObjects()) {
-        processPixmapWithTool(&pixmapItem, toolItem);
-        update(paddedUpdateRect(toolItem->boundingRect()));
+        if (toolItem.isNull()) continue;
+
+        if (cascadeDirty || toolItem->isRenderCacheDirty()) {
+            cascadeDirty = true;
+            QPixmap toolCache = pixmapItem;
+            processPixmapWithTool(&toolCache, toolItem);
+            toolItem->setRenderCache(toolCache);
+            update(paddedUpdateRect(toolItem->boundingRect()));
+        }
+        pixmapItem = toolItem->renderCache();
     }
 
     m_context.screenshot = pixmapItem;

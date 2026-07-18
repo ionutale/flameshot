@@ -264,6 +264,7 @@ void TextTool::pressed(CaptureContext& context)
 void TextTool::onColorChanged(const QColor& color)
 {
     m_color = color;
+    markRenderCacheDirty();
     if (m_widget != nullptr) {
         m_widget->setTextColor(color);
     }

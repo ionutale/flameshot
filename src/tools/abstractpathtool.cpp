@@ -98,6 +98,7 @@ void AbstractPathTool::drawMove(const QPoint& p)
 void AbstractPathTool::onColorChanged(const QColor& c)
 {
     m_color = c;
+    markRenderCacheDirty();
 }
 
 void AbstractPathTool::onSizeChanged(int size)
