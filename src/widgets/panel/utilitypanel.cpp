@@ -136,6 +136,8 @@ void UtilityPanel::initInternalPanel()
     m_bottomLayout->addLayout(m_layersLayout);
     widget->setLayout(m_layout);
 
+    QColor bgColor = palette().window().color();
+    bgColor.setAlphaF(0.0);
     m_internalPanel->setStyleSheet(
       "QScrollArea { background-color: #F5F0FF; }"
       "QWidget { background-color: #F5F0FF; }"
