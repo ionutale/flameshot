@@ -9,6 +9,13 @@
 #include <QPen>
 #include <QScreen>
 
+OverlayMessage::~OverlayMessage()
+{
+    if (m_instance == this) {
+        m_instance = nullptr;
+    }
+}
+
 OverlayMessage::OverlayMessage(QWidget* parent, const QRect& targetArea)
   : QLabel(parent)
   , m_targetArea(targetArea)
