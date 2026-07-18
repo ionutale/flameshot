@@ -482,13 +482,56 @@ void CaptureWidget::xywhTick()
 void CaptureWidget::onDisplayGridChanged(bool display)
 {
     m_displayGrid = display;
+    invalidateGridCache();
     repaint();
 }
 
 void CaptureWidget::onGridSizeChanged(int size)
 {
     m_gridSize = size;
+    invalidateGridCache();
     repaint();
+}
+
+void CaptureWidget::invalidateGridCache()
+{
+    m_gridCache = QPixmap();
+    m_gridCacheDirty = true;
+}
+
+void CaptureWidget::ensureGridCache()
+{
+    if (!m_gridCacheDirty || !m_displayGrid) {
+        return;
+    }
+
+    const auto scale{ m_context.screenshot.devicePixelRatio() };
+    auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
+    topLeft.rx() -= topLeft.x() % m_gridSize;
+    topLeft.ry() -= topLeft.y() % m_gridSize;
+    topLeft = mapFromGlobal(topLeft);
+
+    const auto step{ m_gridSize / scale };
+    const auto radius{ 1 * scale };
+
+    QRect gridRect(topLeft, QPoint(m_context.selection.right() / scale,
+                                   m_context.selection.bottom() / scale));
+    m_gridCache = QPixmap(gridRect.size());
+    m_gridCache.fill(Qt::transparent);
+
+    QPainter painter(&m_gridCache);
+    QColor gridColor = ConfigHandler().uiColor();
+    gridColor.setAlpha(100);
+    painter.setPen(gridColor);
+    painter.setBrush(QBrush(gridColor));
+
+    for (int y = 0; y < gridRect.height(); y += step) {
+        for (int x = 0; x < gridRect.width(); x += step) {
+            painter.drawEllipse(x, y, radius, radius);
+        }
+    }
+
+    m_gridCacheDirty = false;
 }
 
 void CaptureWidget::startColorGrab()
@@ -784,26 +827,14 @@ void CaptureWidget::paintEvent(QPaintEvent* paintEvent)
     }
 
     if (m_displayGrid) {
-        QColor uicolor = ConfigHandler().uiColor();
-        uicolor.setAlpha(100);
-        painter.setPen(uicolor);
-        painter.setBrush(QBrush(uicolor));
-
-        const auto scale{ m_context.screenshot.devicePixelRatio() };
-        auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
-        topLeft.rx() -= topLeft.x() % m_gridSize;
-        topLeft.ry() -= topLeft.y() % m_gridSize;
-        topLeft = mapFromGlobal(topLeft);
-
-        const auto step{ m_gridSize / scale };
-        const auto radius{ 1 * scale };
-
-        for (int y = topLeft.y(); y < m_context.selection.bottom() / scale;
-             y += step) {
-            for (int x = topLeft.x(); x < m_context.selection.right() / scale;
-                 x += step) {
-                painter.drawEllipse(x, y, radius, radius);
-            }
+        ensureGridCache();
+        if (!m_gridCache.isNull()) {
+            const auto scale{ m_context.screenshot.devicePixelRatio() };
+            auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
+            topLeft.rx() -= topLeft.x() % m_gridSize;
+            topLeft.ry() -= topLeft.y() % m_gridSize;
+            topLeft = mapFromGlobal(topLeft);
+            painter.drawPixmap(topLeft, m_gridCache);
         }
     }
 
@@ -1213,6 +1244,7 @@ void CaptureWidget::wheelEvent(QWheelEvent* e)
 void CaptureWidget::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
+    invalidateGridCache();
     m_context.widgetOffset = mapToGlobal(QPoint(0, 0));
 #ifdef FLAMESHOT_DEBUG_CAPTURE
     qDebug() << tr("Capture widget resized: %1x%2 offset %3,%4")
@@ -1407,6 +1439,7 @@ void CaptureWidget::initSelection()
         QRect constrainedToCaptureArea =
           m_selection->geometry().intersected(rect());
         m_context.selection = extendedRect(constrainedToCaptureArea);
+        invalidateGridCache();
 
         m_buttonHandler->hide();
         updateCursor();
@@ -1443,6 +1476,7 @@ void CaptureWidget::initSelection()
     m_selection->setVisible(!initialSelection.isNull());
     if (!initialSelection.isNull()) {
         m_context.selection = extendedRect(m_selection->geometry());
+        invalidateGridCache();
         emit m_selection->geometrySettled();
     }
 }

@@ -158,6 +158,9 @@ private:
 
     QPoint snapToGrid(const QPoint& point) const;
 
+    void ensureGridCache();
+    void invalidateGridCache();
+
     ////////////////////////////////////////
     // Class members
 
@@ -234,6 +237,8 @@ private:
     // Grid
     bool m_displayGrid{ false };
     int m_gridSize{ 10 };
+    QPixmap m_gridCache;
+    bool m_gridCacheDirty{ true };
 
     bool m_clipboardWorkaroundDone{ false };
 };
