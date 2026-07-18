@@ -68,16 +68,15 @@ int CaptureToolObjects::find(const QPoint& pos, QSize captureSize)
         return -1;
     }
     QPixmap pixmap(captureSize);
-    QPainter painter(&pixmap);
-    int index = findWithRadius(painter, pixmap, pos, SEARCH_RADIUS_NEAR);
+    pixmap.fill(Qt::transparent);
+    int index = findWithRadius(pixmap, pos, SEARCH_RADIUS_NEAR);
     if (-1 == index) {
-        index = findWithRadius(painter, pixmap, pos, SEARCH_RADIUS_FAR);
+        index = findWithRadius(pixmap, pos, SEARCH_RADIUS_FAR);
     }
     return index;
 }
 
-int CaptureToolObjects::findWithRadius(QPainter& painter,
-                                       QPixmap& pixmap,
+int CaptureToolObjects::findWithRadius(QPixmap& pixmap,
                                        const QPoint& pos,
                                        int radius)
 {
@@ -104,14 +103,15 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
             image = m_imageCache.at(index);
         } else {
             pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
             toolItem->drawSearchArea(painter, pixmap);
+            painter.end();
             image = pixmap.toImage();
             if (index >= m_imageCache.size()) {
                 m_imageCache.resize(index + 1);
             }
             m_imageCache[index] = image;
         }
-
         if (toolItem->type() == CaptureTool::TYPE_TEXT) {
             if (currentRadius > SEARCH_RADIUS_NEAR) {
                 continue;
