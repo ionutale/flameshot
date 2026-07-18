@@ -397,6 +397,7 @@ void FlameshotDaemon::handleReplyCheckUpdates(QNetworkReply* reply)
 {
     if (!ConfigHandler().checkForUpdates() &&
         !m_showManualCheckAppUpdateStatus) {
+        cleanupAfterUpdateCheck(reply);
         return;
     }
 
@@ -429,6 +430,17 @@ void FlameshotDaemon::handleReplyCheckUpdates(QNetworkReply* reply)
         }
     }
     m_showManualCheckAppUpdateStatus = false;
+
+    cleanupAfterUpdateCheck(reply);
+}
+
+void FlameshotDaemon::cleanupAfterUpdateCheck(QNetworkReply* reply)
+{
+    reply->deleteLater();
+    if (m_networkCheckUpdates) {
+        m_networkCheckUpdates->deleteLater();
+        m_networkCheckUpdates = nullptr;
+    }
 }
 #endif
 

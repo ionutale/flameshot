@@ -54,6 +54,9 @@ public slots:
 private slots:
     void handleReplyCheckUpdates(QNetworkReply* reply);
 
+private:
+    void cleanupAfterUpdateCheck(QNetworkReply* reply);
+
 signals:
     void newVersionAvailable(QVersionNumber version);
 #endif
