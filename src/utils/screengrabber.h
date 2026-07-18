@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "src/utils/desktopinfo.h"
+#include "utils/desktopinfo.h"
+
 #include <QEvent>
 #include <QList>
 #include <QMap>
@@ -38,6 +39,7 @@ private:
     QWidget* createMonitorPreviews(const QPixmap& fullScreenshot);
     QPixmap cropToMonitor(const QPixmap& fullScreenshot, int monitorIndex);
     QPixmap windowsScreenshot(int wid);
+    QPixmap x11LegacyScreenshot();
 
     DesktopInfo m_info;
     QPixmap Screenshot;

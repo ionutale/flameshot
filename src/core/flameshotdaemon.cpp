@@ -1,13 +1,13 @@
 #include "flameshotdaemon.h"
+#include "core/flameshot.h"
+#include "tools/pin/pinwidget.h"
+#include "utils/abstractlogger.h"
+#include "utils/confighandler.h"
+#include "utils/globalvalues.h"
+#include "utils/screenshotsaver.h"
+#include "widgets/capture/capturewidget.h"
+#include "widgets/trayicon.h"
 
-#include "abstractlogger.h"
-#include "confighandler.h"
-#include "flameshot.h"
-#include "pinwidget.h"
-#include "screenshotsaver.h"
-#include "src/utils/globalvalues.h"
-#include "src/widgets/capture/capturewidget.h"
-#include "src/widgets/trayicon.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QIODevice>
@@ -36,7 +36,7 @@
 #endif
 
 #ifdef Q_OS_WIN
-#include "src/core/globalshortcutfilter.h"
+#include "core/globalshortcutfilter.h"
 #endif
 
 /**
@@ -51,9 +51,7 @@
  *   quits.
  *
  * If the `autoCloseIdleDaemon` option is true, the daemon will close as soon as
- * it is not needed to host pinned screenshots and the clipboard. On Windows,
- * this option is disabled and the daemon always persists, because the system
- * tray is currently the only way to interact with flameshot there.
+ * it is not needed to host pinned screenshots and the clipboard.
  *
  * Both the daemon and non-daemon flameshot processes use the same public API,
  * which is implemented as static methods. In the daemon process, this class is
@@ -85,9 +83,7 @@ FlameshotDaemon::FlameshotDaemon()
           m_hostingClipboard = false;
           quitIfIdle();
       });
-#ifdef Q_OS_WIN
-    m_persist = true;
-#else
+
     m_persist = !ConfigHandler().autoCloseIdleDaemon();
     connect(ConfigHandler::getInstance(),
             &ConfigHandler::fileChanged,
@@ -97,7 +93,6 @@ FlameshotDaemon::FlameshotDaemon()
                 enableTrayIcon(!config.disabledTrayIcon());
                 m_persist = !config.autoCloseIdleDaemon();
             });
-#endif
 
 #if !defined(DISABLE_UPDATE_CHECKER)
     if (ConfigHandler().checkForUpdates()) {
@@ -141,12 +136,7 @@ void FlameshotDaemon::createPin(const QPixmap& capture, QRect geometry)
 
 void FlameshotDaemon::copyToClipboard(const QPixmap& capture)
 {
-#if defined(Q_OS_MACOS) && defined(USE_KDSINGLEAPPLICATION)
-    auto kdsa = KDSingleApplication(QStringLiteral("org.flameshot.Flameshot"));
-    if (kdsa.isPrimaryInstance() && instance()) {
-#else
     if (instance()) {
-#endif
         instance()->attachScreenshotToClipboard(capture);
         return;
     }
@@ -156,9 +146,7 @@ void FlameshotDaemon::copyToClipboard(const QPixmap& capture)
 
 #if defined(USE_KDSINGLEAPPLICATION) &&                                        \
   (defined(Q_OS_MACOS) || defined(Q_OS_WIN))
-#if defined(Q_OS_WIN)
     auto kdsa = KDSingleApplication(QStringLiteral("org.flameshot.Flameshot"));
-#endif
     stream << QStringLiteral("attachScreenshotToClipboard") << capture;
     kdsa.sendMessage(data);
 #else
@@ -174,21 +162,14 @@ void FlameshotDaemon::copyToClipboard(const QPixmap& capture)
 void FlameshotDaemon::copyToClipboard(const QString& text,
                                       const QString& notification)
 {
-#if defined(Q_OS_MACOS) && defined(USE_KDSINGLEAPPLICATION)
-    auto kdsa = KDSingleApplication(QStringLiteral("org.flameshot.Flameshot"));
-    if (kdsa.isPrimaryInstance() && instance()) {
-#else
     if (instance()) {
-#endif
         instance()->attachTextToClipboard(text, notification);
         return;
     }
 
 #if defined(USE_KDSINGLEAPPLICATION) &&                                        \
   (defined(Q_OS_MACOS) || defined(Q_OS_WIN))
-#if defined(Q_OS_WIN)
     auto kdsa = KDSingleApplication(QStringLiteral("org.flameshot.Flameshot"));
-#endif
     QByteArray data;
     QDataStream stream(&data, QIODevice::WriteOnly);
     stream << QStringLiteral("attachTextToClipboard") << text << notification;
@@ -385,13 +366,10 @@ void FlameshotDaemon::attachTextToClipboard(const QString& text,
 
 void FlameshotDaemon::initTrayIcon()
 {
-#if defined(Q_OS_LINUX) || defined(Q_OS_UNIX)
     if (!ConfigHandler().disabledTrayIcon()) {
         enableTrayIcon(true);
     }
-#elif defined(Q_OS_WIN)
-    enableTrayIcon(true);
-
+#if defined(Q_OS_WIN)
     GlobalShortcutFilter* nativeFilter = new GlobalShortcutFilter(this);
     qApp->installNativeEventFilter(nativeFilter);
 #endif

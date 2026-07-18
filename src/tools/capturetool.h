@@ -3,9 +3,10 @@
 
 #pragma once
 
-#include "src/tools/capturecontext.h"
-#include "src/utils/colorutils.h"
-#include "src/utils/pathinfo.h"
+#include "tools/capturecontext.h"
+#include "utils/colorutils.h"
+#include "utils/pathinfo.h"
+
 #include <QIcon>
 #include <QPainter>
 
@@ -104,6 +105,12 @@ public:
         return {};
     };
     virtual QRect boundingRect() const = 0;
+    virtual bool handleMouseWheelEvent(int delta,
+                                       bool adjustmentButtonPressed,
+                                       CaptureContext& context)
+    {
+        return false;
+    }
 
     // The icon of the tool.
     // inEditor is true when the icon is requested inside the editor

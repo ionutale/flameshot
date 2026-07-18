@@ -3,7 +3,8 @@
 
 #pragma once
 
-#include "src/widgets/capture/capturetoolbutton.h"
+#include "widgets/capture/capturetoolbutton.h"
+
 #include <QSettings>
 #include <QStringList>
 #include <QVariant>
@@ -119,6 +120,9 @@ public:
     CONFIG_GETTER_SETTER(saveAsFileExtension, setSaveAsFileExtension, QString)
     CONFIG_GETTER_SETTER(antialiasingPinZoom, setAntialiasingPinZoom, bool)
     CONFIG_GETTER_SETTER(useJpgForClipboard, setUseJpgForClipboard, bool)
+#if defined(Q_OS_MACOS)
+    CONFIG_GETTER_SETTER(useNativeFullscreen, setUseNativeFullscreen, bool)
+#endif
     CONFIG_GETTER_SETTER(uploadWithoutConfirmation,
                          setUploadWithoutConfirmation,
                          bool)
@@ -135,6 +139,7 @@ public:
     CONFIG_GETTER_SETTER(showSelectionGeometry, setShowSelectionGeometry, int)
     CONFIG_GETTER_SETTER(jpegQuality, setJpegQuality, int)
     CONFIG_GETTER_SETTER(reverseArrow, setReverseArrow, bool)
+    CONFIG_GETTER_SETTER(arrowStyle, setArrowStyle, int)
     CONFIG_GETTER_SETTER(insecurePixelate, setInsecurePixelate, bool)
     CONFIG_GETTER_SETTER(showSelectionGeometryHideTime,
                          showSelectionGeometryHideTime,
@@ -145,6 +150,14 @@ public:
                          bool)
     CONFIG_GETTER_SETTER(captureActiveScreenOnly,
                          setCaptureActiveScreenOnly,
+                         bool)
+#endif
+#if !defined(Q_OS_MACOS)
+    CONFIG_GETTER_SETTER(captureActiveMonitor, setCaptureActiveMonitor, bool)
+#endif
+#if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
+    CONFIG_GETTER_SETTER(useX11LegacyScreenshot,
+                         setUseX11LegacyScreenshot,
                          bool)
 #endif
 

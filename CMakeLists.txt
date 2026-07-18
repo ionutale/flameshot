@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 # cmake_policy(SET CMP0076 OLD)
 
-set(FLAMESHOT_VERSION 13.4.0)
+set(FLAMESHOT_VERSION 14.0.0)
 
 # Flameshot-org
 set(GIT_API_URL "https://api.github.com/repos/flameshot-org/flameshot/releases/latest")
@@ -112,8 +112,6 @@ include(cmake/CompilerWarnings.cmake)
 include(cmake/Sanitizers.cmake)
 enable_sanitizers(project_options)
 
-# allow for static analysis options include(cmake/StaticAnalyzers.cmake)
-
 if(USE_KDSINGLEAPPLICATION)
   if(USE_BUNDLED_KDSINGLEAPPLICATION)
     set(KDSingleApplication_EXAMPLES OFF CACHE BOOL "Don't build the examples")
@@ -126,7 +124,7 @@ if(USE_KDSINGLEAPPLICATION)
       FetchContent_Declare(
         kdsingleApplication
         GIT_REPOSITORY https://github.com/KDAB/KDSingleApplication.git
-        GIT_TAG v1.2.0
+        GIT_TAG v1.2.1
       )
       FetchContent_MakeAvailable(kdsingleApplication)
     endif()
@@ -134,6 +132,10 @@ if(USE_KDSINGLEAPPLICATION)
     find_package(KDSingleApplication-qt6 REQUIRED)
   endif()
 endif()
+
+# allow for static analysis options (include after kdsingleApplication because
+# of potential conflict if ENABLE_QT_DEPRECATION_CHECK is used)
+include(cmake/StaticAnalyzers.cmake)
 
 # ToDo: Check if this is used anywhere
 option(BUILD_STATIC_LIBS ON)

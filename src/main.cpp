@@ -5,33 +5,35 @@
 #include <kdsingleapplication.h>
 #ifdef Q_OS_UNIX
 #include "core/signaldaemon.h"
-#include "csignal"
+#include <csignal>
 #endif
 #endif
 
-#include "abstractlogger.h"
-#include "src/cli/commandlineparser.h"
-#include "src/config/cacheutils.h"
-#include "src/config/styleoverride.h"
-#include "src/core/capturerequest.h"
-#include "src/core/flameshot.h"
-#include "src/core/flameshotdaemon.h"
-#include "src/utils/confighandler.h"
-#include "src/utils/filenamehandler.h"
-#include "src/utils/pathinfo.h"
-#include "src/utils/valuehandler.h"
+#include "cli/commandlineparser.h"
+#include "config/cacheutils.h"
+#include "config/styleoverride.h"
+#include "core/capturerequest.h"
+#include "core/flameshot.h"
+#include "core/flameshotdaemon.h"
+#include "utils/abstractlogger.h"
+#include "utils/confighandler.h"
+#include "utils/filenamehandler.h"
+#include "utils/pathinfo.h"
+#include "utils/valuehandler.h"
+
+#if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
+#include "core/flameshotdbusadapter.h"
+#include <QDBusConnection>
+#include <QDBusMessage>
+#endif
+
 #include <QApplication>
 #include <QDir>
 #include <QLibraryInfo>
+#include <QNetworkProxyFactory>
 #include <QSharedMemory>
 #include <QTimer>
 #include <QTranslator>
-#if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
-#include "src/core/flameshotdbusadapter.h"
-#include <QDBusConnection>
-#include <QDBusMessage>
-#include <desktopinfo.h>
-#endif
 
 // Required for saving button list QList<CaptureTool::Type>
 Q_DECLARE_METATYPE(QList<int>)
@@ -208,6 +210,7 @@ int main(int argc, char* argv[])
     QCoreApplication::setApplicationVersion(APP_VERSION);
     QCoreApplication::setApplicationName(QStringLiteral("flameshot"));
     QCoreApplication::setOrganizationName(QStringLiteral("flameshot"));
+    QNetworkProxyFactory::setUseSystemConfiguration(true);
 
     // no arguments, just launch Flameshot
     if (argc == 1) {
@@ -222,7 +225,8 @@ int main(int argc, char* argv[])
         auto kdsa =
           KDSingleApplication(QStringLiteral("org.flameshot.Flameshot"));
 
-        if (!kdsa.isPrimaryInstance()) {
+        if (!kdsa.isPrimaryInstance() &&
+            !ConfigHandler().allowMultipleGuiInstances()) {
             return 0; // Quit
         }
 #endif
@@ -572,13 +576,12 @@ int main(int argc, char* argv[])
         bool pin = parser.isSet(pinOption);
         bool edit = parser.isSet(editOption);
 
-        CaptureRequest req(edit ? CaptureRequest::GRAPHICAL_MODE
-                                : CaptureRequest::SCREEN_MODE,
-                           delay);
-
-        // For edit mode, set the selected monitor
-        if (edit && screenNumber >= 0) {
-            req.setSelectedMonitor(screenNumber);
+        CaptureRequest req(CaptureRequest::SCREEN_MODE, delay, screenNumber);
+        if (edit) {
+            req = CaptureRequest(CaptureRequest::GRAPHICAL_MODE, delay);
+            if (screenNumber >= 0) {
+                req.setSelectedMonitor(screenNumber);
+            }
         }
 
         if (!region.isEmpty()) {

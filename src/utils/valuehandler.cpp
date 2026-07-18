@@ -1,8 +1,9 @@
 #include "valuehandler.h"
-#include "capturetool.h"
-#include "colorpickerwidget.h"
-#include "confighandler.h"
-#include "screengrabber.h"
+#include "tools/capturetool.h"
+#include "utils/confighandler.h"
+#include "utils/screengrabber.h"
+#include "widgets/colorpickerwidget.h"
+
 #include <QColor>
 #include <QFileInfo>
 #include <QImageWriter>
@@ -543,17 +544,6 @@ QVariant Region::process(const QVariant& val)
     }
 
     QString str = val.toString();
-
-    if (str == "all") {
-        return ScreenGrabber().desktopGeometry();
-    } else if (str.startsWith("screen")) {
-        bool ok;
-        int number = str.mid(6).toInt(&ok);
-        if (!ok || number < 0) {
-            return {};
-        }
-        return ScreenGrabber().screenGeometry(qApp->screens()[number]);
-    }
 
     static const QRegularExpression regex(
       "(-{,1}\\d+)"   // number (any sign)
