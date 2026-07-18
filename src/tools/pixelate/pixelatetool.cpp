@@ -11,6 +11,7 @@
 #include <QImage>
 #include <QPainter>
 #include <array>
+
 #include <random>
 
 PixelateTool::PixelateTool(QObject* parent)
@@ -111,6 +112,7 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
         // generating a monochromatic box when the fringe is monochromatic
         std::normal_distribution<float> noise(0, 0.1f);
 
+
         QPoint const offset_top(0, selectionScaled.topLeft().y() == 0 ? 0 : -1);
         QPoint const offset_bottom(0,
                                    selectionScaled.bottomLeft().y() ==
@@ -153,6 +155,18 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
         // This will later be scaled to cover the selected area.
         QImage pixelated = QImage(effectSize, QImage::Format_RGB32);
 
+        // Direct buffer access for fringes
+        const uchar* fringeBits[4];
+        int fringeStride[4];
+        for (int i = 0; i < 4; ++i) {
+            fringeBits[i] = fringe[i].constBits();
+            fringeStride[i] = fringe[i].bytesPerLine();
+        }
+
+        // Direct buffer access for pixelated output
+        QRgb* pixelatedBits = reinterpret_cast<QRgb*>(pixelated.bits());
+        int pixelatedStride = pixelated.bytesPerLine() / sizeof(QRgb);
+
         // For every pixel of the effect, we consider four projections
         // to the fringe and sample a pixel from there.
         // Then a horizontal and vertical interpolation are calculated.
@@ -167,25 +181,27 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
                 float const vertical = y / (float)height;
 
                 for (int i = 0; i < 4; ++i) {
-                    QColor const c = fringe[i].pixel(
-                      std::clamp(
-                        static_cast<int>(horizontal * fringe[i].width() +
-                                         sampling_noise(prng)),
-                        0,
-                        fringe[i].width() - 1),
-                      std::clamp(
-                        static_cast<int>(vertical * fringe[i].height() +
-                                         sampling_noise(prng)),
-                        0,
-                        fringe[i].height() - 1));
-                    samples[i][0] = c.redF();
-                    samples[i][1] = c.greenF();
-                    samples[i][2] = c.blueF();
+                    float sx = sampling_noise(prng);
+                    float sy = sampling_noise(prng);
+                    int fx = std::clamp(
+                      static_cast<int>(horizontal * fringe[i].width() + sx),
+                      0,
+                      fringe[i].width() - 1);
+                    int fy = std::clamp(
+                      static_cast<int>(vertical * fringe[i].height() + sy),
+                      0,
+                      fringe[i].height() - 1);
+                    const QRgb* pixelPtr = reinterpret_cast<const QRgb*>(
+                      fringeBits[i] + fy * fringeStride[i] +
+                      fx * (fringe[i].depth() / 8));
+                    samples[i][0] = qRed(*pixelPtr) / 255.0f;
+                    samples[i][1] = qGreen(*pixelPtr) / 255.0f;
+                    samples[i][2] = qBlue(*pixelPtr) / 255.0f;
                 }
 
                 // weights of the horizontal resp. vertical interpolation
                 float const weight_h = (qMin(x, width - x) / width) -
-                                       (qMin(y, height - y) / height) + 0.5;
+                                        (qMin(y, height - y) / height) + 0.5;
 
                 float const weight_v = 1 - weight_h;
 
@@ -209,7 +225,8 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
                     rgb[i] = std::clamp(rgb[i], 0, 0xff);
                 }
                 QRgb const value = qRgb(rgb[0], rgb[1], rgb[2]);
-                pixelated.setPixel(x, y, value);
+                QRgb* dest = pixelatedBits + y * pixelatedStride;
+                dest[x] = value;
             }
         }
 
