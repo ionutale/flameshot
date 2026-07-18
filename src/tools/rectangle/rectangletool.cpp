@@ -80,7 +80,8 @@ void RectangleTool::process(QPainter& painter, const QPixmap& pixmap)
                  std::min(points().first.y(), points().second.y()) - pad,
                  std::abs(points().first.x() - points().second.x()) + pad * 2,
                  std::abs(points().first.y() - points().second.y()) + pad * 2),
-          w, w);
+          w,
+          w);
         // Shadow
         painter.setPen(Qt::NoPen);
         painter.setBrush(QColor(0, 0, 0, 40));
