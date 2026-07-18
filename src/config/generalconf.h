@@ -108,6 +108,9 @@ private:
     void initJpegQuality();
     void initReverseArrow();
     void initInsecurePixelate();
+#if defined(Q_OS_WIN)
+    void initCaptureActiveScreenOnly();
+#endif
 #if !defined(Q_OS_MACOS)
     void initCaptureActiveMonitor();
 #endif
