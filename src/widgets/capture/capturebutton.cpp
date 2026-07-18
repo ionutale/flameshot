@@ -33,9 +33,9 @@ void CaptureButton::init()
     setFocusPolicy(Qt::NoFocus);
 
     auto* dsEffect = new QGraphicsDropShadowEffect(this);
-    dsEffect->setBlurRadius(5);
+    dsEffect->setBlurRadius(6);
     dsEffect->setOffset(0);
-    dsEffect->setColor(QColor(Qt::black));
+    dsEffect->setColor(QColor(0, 0, 0, 77));
 
     setGraphicsEffect(dsEffect);
 }
@@ -47,14 +47,15 @@ QString CaptureButton::globalStyleSheet()
 
 QString CaptureButton::styleSheet() const
 {
-    QString baseSheet = "CaptureButton { border: none;"
-                        "padding: 3px 8px;"
-                        "background-color: %1; color: %4 }"
-                        "CaptureToolButton { border-radius: %3;"
-                        "padding: 0; }"
-                        "CaptureButton:hover { background-color: %2; }"
-                        "CaptureButton:pressed:!hover { "
-                        "background-color: %1; }";
+    QString baseSheet =
+      "CaptureButton { border: 1px solid rgba(%5,%6,%7,0.15);"
+      "padding: 3px 8px;"
+      "background-color: %1; color: %4 }"
+      "CaptureToolButton { border-radius: %3;"
+      "padding: 0; }"
+      "CaptureButton:hover { background-color: %2; }"
+      "CaptureButton:pressed:!hover { "
+      "background-color: %1; }";
     // define color when mouse is hovering
     QColor contrast = ColorUtils::contrastColor(m_mainColor);
     // foreground color
@@ -63,7 +64,10 @@ QString CaptureButton::styleSheet() const
     return baseSheet.arg(m_mainColor.name(),
                          contrast.name(),
                          QString::number(GlobalValues::buttonBaseSize() / 2),
-                         color.name());
+                         color.name(),
+                         QString::number(contrast.red()),
+                         QString::number(contrast.green()),
+                         QString::number(contrast.blue()));
 }
 
 void CaptureButton::setColor(const QColor& c)

@@ -138,6 +138,25 @@ SidePanelWidget::SidePanelWidget(QPixmap* p, QWidget* parent)
             qOverload<int>(&QSpinBox::valueChanged),
             this,
             &SidePanelWidget::gridSizeChanged);
+
+    setStyleSheet(
+      "SidePanelWidget { background-color: #F5F0FF; }"
+      "QWidget { background-color: #F5F0FF; }"
+      "QLabel { color: #6C3483; border: none; background: transparent; }"
+      "QGroupBox { background-color: #F5F0FF; border: 1px solid #EDE4F5;"
+      "  border-radius: 6px; margin-top: 12px; padding-top: 12px; }"
+      "QGroupBox::title { color: #6C3483; font-weight: 600;"
+      "  subcontrol-origin: margin; left: 10px; }"
+      "QPushButton { background-color: #EDE4F5; border: 1px solid #E0D0EE;"
+      "  border-radius: 4px; padding: 4px 12px; }"
+      "QPushButton:hover { background-color: #E0D0EE; }"
+      "QSlider::groove:horizontal { background: #EDE4F5; height: 4px;"
+      "  border-radius: 2px; }"
+      "QSlider::handle:horizontal { background: #9B59B6; width: 14px;"
+      "  height: 14px; border-radius: 7px; margin: -5px 0; }"
+      "QSpinBox { background-color: white; border: 1px solid #EDE4F5;"
+      "  border-radius: 4px; padding: 2px 4px; }"
+      "QCheckBox { color: #6C3483; background: transparent; }");
 }
 
 void SidePanelWidget::onColorChanged(const QColor& color)

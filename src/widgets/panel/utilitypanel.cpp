@@ -136,10 +136,19 @@ void UtilityPanel::initInternalPanel()
     m_bottomLayout->addLayout(m_layersLayout);
     widget->setLayout(m_layout);
 
-    QColor bgColor = palette().window().color();
-    bgColor.setAlphaF(0.0);
     m_internalPanel->setStyleSheet(
-      QStringLiteral("QScrollArea {background-color: %1}").arg(bgColor.name()));
+      "QScrollArea { background-color: #F5F0FF; }"
+      "QWidget { background-color: #F5F0FF; }"
+      "QListWidget { background-color: #F5F0FF;"
+      "  border: 1px solid #EDE4F5;"
+      "  border-radius: 6px; }"
+      "QListWidget::item { border-radius: 4px; padding: 4px; }"
+      "QListWidget::item:selected { background-color: #EDE4F5;"
+      "  color: #6C3483; }"
+      "QPushButton { background-color: #EDE4F5;"
+      "  border: 1px solid #E0D0EE;"
+      "  border-radius: 4px; padding: 4px 12px; }"
+      "QPushButton:hover { background-color: #E0D0EE; }");
     m_internalPanel->hide();
 
     m_captureTools = new QListWidget(this);

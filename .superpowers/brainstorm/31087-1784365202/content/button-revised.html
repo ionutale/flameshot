@@ -1,0 +1,76 @@
+<h2>Revised Button Style</h2>
+<p class="subtitle">Solid fill (no gradient) + inner glow + refined shadow</p>
+
+<div class="section">
+  <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap">
+    <div style="text-align:center">
+      <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase">Current</div>
+      <div style="width:44px;height:44px;border-radius:50%;background:#740096;
+                  display:flex;align-items:center;justify-content:center;margin:0 auto;
+                  box-shadow:0 2px 4px rgba(0,0,0,.2)">
+        <div style="color:white;font-size:16px">✏️</div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#999">Flat + shadow</div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase">Proposed</div>
+      <div style="width:44px;height:44px;border-radius:50%;background:#9B59B6;
+                  display:flex;align-items:center;justify-content:center;margin:0 auto;
+                  box-shadow:0 2px 6px rgba(107,52,131,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+                  border:1px solid rgba(107,52,131,0.15)">
+        <div style="color:white;font-size:16px">✏️</div>
+      </div>
+      <div style="margin-top:6px;font-size:11px;color:#999">Solid + inner glow + border</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Final Design Summary</h3>
+  <table style="width:100%;border-collapse:collapse;text-align:left">
+    <tr style="border-bottom:1px solid #e0d0ee">
+      <th style="padding:8px 12px">Area</th>
+      <th style="padding:8px 12px">Change</th>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">uiColor</td>
+      <td style="padding:8px 12px">#740096 → #9B59B6</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">contrastUiColor</td>
+      <td style="padding:8px 12px">#270032 → #6C3483</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Button fill</td>
+      <td style="padding:8px 12px">New softer purple, inner glow highlight, subtle border, no gradient</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Button hover</td>
+      <td style="padding:8px 12px">contrastUiColor (#6C3483) instead of ColorUtils::contrastColor</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Panel background</td>
+      <td style="padding:8px 12px">#F5F0FF (lilac white), unified with capture theme</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Panel accent/hover</td>
+      <td style="padding:8px 12px">#EDE4F5 (soft lilac)</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Selection border</td>
+      <td style="padding:8px 12px">Thin white (~2px) + outer purple glow/shadow</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Grid / XYWH display</td>
+      <td style="padding:8px 12px">Use new soft purple at current alpha levels</td>
+    </tr>
+    <tr style="border-bottom:1px solid #f0eaf5">
+      <td style="padding:8px 12px;font-weight:500">Overlay</td>
+      <td style="padding:8px 12px">Unchanged (keep current)</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section" style="text-align:center">
+  <p>Does this look good? Approve in terminal and I'll write the full design spec.</p>
+</div>

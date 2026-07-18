@@ -383,10 +383,25 @@ void SelectionWidget::paintEvent(QPaintEvent*)
     if (!p.isActive()) {
         return;
     }
-    p.setPen(m_color);
-    p.drawRect(rect() + QMargins(0, 0, -1, -1));
     p.setRenderHint(QPainter::Antialiasing);
+
+    QRect r = rect() + QMargins(0, 0, -1, -1);
+
+    // Purple glow behind the border
+    QPen glowPen(m_color, 6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    glowPen.setColor(QColor(m_color.red(), m_color.green(), m_color.blue(), 80));
+    p.setPen(glowPen);
+    p.setBrush(Qt::NoBrush);
+    p.drawRect(r);
+
+    // White border on top
+    QPen borderPen(Qt::white, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+    p.setPen(borderPen);
+    p.drawRect(r);
+
+    // Handles (drag circles) in accent color
     p.setBrush(m_color);
+    p.setPen(Qt::NoPen);
     for (auto rectangle : handlerAreas()) {
         p.drawEllipse(rectangle);
     }

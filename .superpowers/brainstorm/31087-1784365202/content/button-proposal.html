@@ -1,0 +1,112 @@
+<h2>Button & Panel Refinements</h2>
+<p class="subtitle">macOS-inspired polish on the circular tool buttons</p>
+
+<div class="section">
+  <h3>Button Layers (Before → After)</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Current</div>
+      <div style="padding:32px;text-align:center">
+        <div style="display:inline-flex;gap:12px;align-items:center;padding:16px;background:#f5f5f5;border-radius:40px">
+          <div style="width:44px;height:44px;border-radius:50%;background:#740096;
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 4px rgba(0,0,0,.2)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;background:#740096;
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 4px rgba(0,0,0,.2)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;background:#740096;
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 4px rgba(0,0,0,.2)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#888">Flat fill, simple drop shadow</div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Proposed</div>
+      <div style="padding:32px;text-align:center">
+        <div style="display:inline-flex;gap:12px;align-items:center;padding:16px;background:#F5F0FF;border-radius:40px">
+          <div style="width:44px;height:44px;border-radius:50%;
+                      background:linear-gradient(135deg, #B07FCC 0%, #9B59B6 50%, #8E44AD 100%);
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 6px rgba(107,52,131,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+                      border:1px solid rgba(107,52,131,0.15)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;
+                      background:linear-gradient(135deg, #B07FCC 0%, #9B59B6 50%, #8E44AD 100%);
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 6px rgba(107,52,131,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+                      border:1px solid rgba(107,52,131,0.15)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+          <div style="width:44px;height:44px;border-radius:50%;
+                      background:linear-gradient(135deg, #B07FCC 0%, #9B59B6 50%, #8E44AD 100%);
+                      display:flex;align-items:center;justify-content:center;
+                      box-shadow:0 2px 6px rgba(107,52,131,0.3), inset 0 1px 0 rgba(255,255,255,0.25);
+                      border:1px solid rgba(107,52,131,0.15)">
+            <div style="color:white;font-size:10px;font-weight:700;opacity:0.7">SVG</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:#888">Gradient fill + inner glow + subtle border</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Panel Changes</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">Current (system palette)</div>
+      <div style="padding:16px;background:#f0f0f0;min-height:200px">
+        <div style="background:white;border-radius:8px;padding:12px">
+          <div style="font-size:11px;font-weight:600;color:#333;margin-bottom:8px">TOOL OPTIONS</div>
+          <div style="background:#e8e8e8;border-radius:4px;height:20px;margin-bottom:6px;width:80%"></div>
+          <div style="background:#e8e8e8;border-radius:4px;height:20px;margin-bottom:6px;width:60%"></div>
+          <div style="background:#e8e8e8;border-radius:4px;height:20px;width:90%"></div>
+        </div>
+        <div style="margin-top:8px;background:white;border-radius:8px;padding:12px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <div style="width:24px;height:24px;border-radius:50%;background:#e0e0e0"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#e0e0e0"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#e0e0e0"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#e0e0e0"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">Proposed (lilac tinted)</div>
+      <div style="padding:16px;background:#EDE4F5;min-height:200px">
+        <div style="background:#F5F0FF;border-radius:8px;padding:12px;box-shadow:0 1px 3px rgba(107,52,131,0.08)">
+          <div style="font-size:11px;font-weight:600;color:#6C3483;margin-bottom:8px">TOOL OPTIONS</div>
+          <div style="background:#EDE4F5;border-radius:4px;height:20px;margin-bottom:6px;width:80%"></div>
+          <div style="background:#EDE4F5;border-radius:4px;height:20px;margin-bottom:6px;width:60%"></div>
+          <div style="background:#EDE4F5;border-radius:4px;height:20px;width:90%"></div>
+        </div>
+        <div style="margin-top:8px;background:#F5F0FF;border-radius:8px;padding:12px;box-shadow:0 1px 3px rgba(107,52,131,0.08)">
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <div style="width:24px;height:24px;border-radius:50%;background:#9B59B6"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#B07FCC"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#C39BD3"></div>
+            <div style="width:24px;height:24px;border-radius:50%;background:#8E44AD"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top:12px;font-size:13px;color:#666">
+    Panel gets a unified lilac background. Section headers use contrastUiColor for labels.
+    Subtle shadow + light borders add depth without being heavy.
+  </p>
+</div>
+
+<div class="section" style="text-align:center">
+  <p>Does this button & panel approach look right? Approve in terminal and I'll write the spec.</p>
+</div>
