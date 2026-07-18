@@ -95,7 +95,7 @@ FlameshotDaemon::FlameshotDaemon()
                 m_persist = !config.autoCloseIdleDaemon();
             });
 
-    QPixmapCache::setCacheLimit(512 * 1024);
+    QPixmapCache::setCacheLimit(512); // 512 KB (value is in kilobytes)
 
 #if !defined(DISABLE_UPDATE_CHECKER)
     if (ConfigHandler().checkForUpdates()) {

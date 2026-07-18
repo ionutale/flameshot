@@ -81,8 +81,6 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
                                        const QPoint& pos,
                                        int radius)
 {
-    bool useCache = (m_imageCache.size() == m_captureToolObjects.size());
-
     for (int index = m_captureToolObjects.size() - 1; index >= 0; --index) {
         auto toolItem = m_captureToolObjects.at(index);
         if (toolItem.isNull())
@@ -100,8 +98,9 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
         int currentRadius = radius;
         QImage image;
 
-        if (useCache && index < m_imageCache.size() &&
-            !m_imageCache.at(index).isNull()) {
+        // Use cached image if available (cache may be sparsely populated due to
+        // geometric prefilter skipping some tools)
+        if (index < m_imageCache.size() && !m_imageCache.at(index).isNull()) {
             image = m_imageCache.at(index);
         } else {
             pixmap.fill(Qt::transparent);
@@ -121,9 +120,11 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
         }
 
         // Direct buffer access instead of QImage::pixel()
-        Q_ASSERT(image.format() == QImage::Format_ARGB32_Premultiplied ||
-                 image.format() == QImage::Format_ARGB32 ||
-                 image.format() == QImage::Format_RGB32);
+        // Runtime format check (Q_ASSERT is compiled out in release builds)
+        bool canUseDirectAccess =
+          image.format() == QImage::Format_ARGB32_Premultiplied ||
+          image.format() == QImage::Format_ARGB32 ||
+          image.format() == QImage::Format_RGB32;
         const uchar* bits = image.constBits();
         int bytesPerLine = image.bytesPerLine();
         int xMin = qMax(0, pos.x() - currentRadius);
@@ -131,12 +132,22 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
         int yMin = qMax(0, pos.y() - currentRadius);
         int yMax = qMin(image.height() - 1, pos.y() + currentRadius);
 
-        for (int y = yMin; y <= yMax; ++y) {
-            const QRgb* line =
-              reinterpret_cast<const QRgb*>(bits + y * bytesPerLine);
-            for (int x = xMin; x <= xMax; ++x) {
-                if (line[x] != 0) {
-                    return index;
+        if (canUseDirectAccess) {
+            for (int y = yMin; y <= yMax; ++y) {
+                const QRgb* line =
+                  reinterpret_cast<const QRgb*>(bits + y * bytesPerLine);
+                for (int x = xMin; x <= xMax; ++x) {
+                    if (line[x] != 0) {
+                        return index;
+                    }
+                }
+            }
+        } else {
+            for (int y = yMin; y <= yMax; ++y) {
+                for (int x = xMin; x <= xMax; ++x) {
+                    if (image.pixel(x, y) != 0) {
+                        return index;
+                    }
                 }
             }
         }

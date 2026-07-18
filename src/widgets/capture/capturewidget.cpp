@@ -511,7 +511,7 @@ void CaptureWidget::ensureGridCache()
     topLeft.ry() -= topLeft.y() % m_gridSize;
     topLeft = mapFromGlobal(topLeft);
 
-    const auto step{ m_gridSize / scale };
+    const int step = qMax(1, static_cast<int>(m_gridSize / scale));
     const auto radius{ 1 * scale };
 
     QRect gridRect(topLeft,

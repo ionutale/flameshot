@@ -154,6 +154,13 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
         // This will later be scaled to cover the selected area.
         QImage pixelated = QImage(effectSize, QImage::Format_RGB32);
 
+        // Ensure 32bpp for safe direct buffer access
+        for (int i = 0; i < 4; ++i) {
+            if (fringe[i].depth() != 32) {
+                fringe[i] = fringe[i].convertToFormat(QImage::Format_RGB32);
+            }
+        }
+
         // Direct buffer access for fringes
         const uchar* fringeBits[4];
         int fringeStride[4];
