@@ -145,6 +145,7 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
 CaptureToolObjects& CaptureToolObjects::operator=(
   const CaptureToolObjects& other)
 {
+    m_imageCache.clear();
     // remove extra items for this if size is bigger
     while (this->m_captureToolObjects.size() >
            other.m_captureToolObjects.size()) {
