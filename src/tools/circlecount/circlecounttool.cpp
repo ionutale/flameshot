@@ -156,8 +156,9 @@ void CircleCountTool::process(QPainter& painter, const QPixmap& pixmap)
     // Shadow for outer ring
     painter.setPen(Qt::NoPen);
     painter.setBrush(QColor(0, 0, 0, 40));
-    painter.drawEllipse(
-      points().first + bOffset, bubble_size + PADDING_VALUE, bubble_size + PADDING_VALUE);
+    painter.drawEllipse(points().first + bOffset,
+                        bubble_size + PADDING_VALUE,
+                        bubble_size + PADDING_VALUE);
 
     QColor borderColor = ColorUtils::contrastColor(color());
     // Border for outer ring
@@ -165,7 +166,8 @@ void CircleCountTool::process(QPainter& painter, const QPixmap& pixmap)
     stroker.setWidth(3);
     stroker.setCapStyle(Qt::RoundCap);
     QPainterPath outerRing;
-    outerRing.addEllipse(points().first, bubble_size + PADDING_VALUE, bubble_size + PADDING_VALUE);
+    outerRing.addEllipse(
+      points().first, bubble_size + PADDING_VALUE, bubble_size + PADDING_VALUE);
     painter.fillPath(stroker.createStroke(outerRing), borderColor);
 
     painter.setPen(contrastColor);

@@ -168,7 +168,8 @@ void ArrowTool::process(QPainter& painter, const QPixmap& pixmap)
     painter.drawLine(head, tail);
 
     // Shaft main
-    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(head, tail);
 
     // Head border

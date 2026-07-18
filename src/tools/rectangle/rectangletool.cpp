@@ -76,11 +76,10 @@ void RectangleTool::process(QPainter& painter, const QPixmap& pixmap)
         int pad = w <= 1 ? 1 : static_cast<int>(round(w / 2 + 0.5));
         QPainterPath path;
         path.addRoundedRect(
-          QRectF(
-            std::min(points().first.x(), points().second.x()) - pad,
-            std::min(points().first.y(), points().second.y()) - pad,
-            std::abs(points().first.x() - points().second.x()) + pad * 2,
-            std::abs(points().first.y() - points().second.y()) + pad * 2),
+          QRectF(std::min(points().first.x(), points().second.x()) - pad,
+                 std::min(points().first.y(), points().second.y()) - pad,
+                 std::abs(points().first.x() - points().second.x()) + pad * 2,
+                 std::abs(points().first.y() - points().second.y()) + pad * 2),
           w, w);
         // Shadow
         painter.setPen(Qt::NoPen);
