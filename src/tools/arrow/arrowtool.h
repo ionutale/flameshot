@@ -17,7 +17,7 @@ public:
     QIcon icon(const QColor& background, bool inEditor) const override;
     QString name() const override;
     QString description() const override;
-    QRect boundingRect() const override;
+    QRect recomputeBoundingRect() const override;
     QWidget* configurationWidget() override;
 
     CaptureTool* copy(QObject* parent = nullptr) override;

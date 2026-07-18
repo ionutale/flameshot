@@ -42,7 +42,6 @@ private:
     QPixmap x11LegacyScreenshot();
 
     DesktopInfo m_info;
-    QPixmap Screenshot;
     int m_selectedMonitor;
     QEventLoop* m_monitorSelectionLoop;
     bool m_userCancelled;

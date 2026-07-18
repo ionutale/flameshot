@@ -104,7 +104,7 @@ public:
     {
         return {};
     };
-    virtual QRect boundingRect() const = 0;
+    virtual QRect boundingRect() const { return cachedBoundingRect(); }
     virtual bool handleMouseWheelEvent(int delta,
                                        bool adjustmentButtonPressed,
                                        CaptureContext& context)
@@ -174,6 +174,22 @@ protected:
         to->m_count = from->m_count;
     }
 
+    // Cached bounding rect
+    QRect cachedBoundingRect() const
+    {
+        if (m_boundingRectDirty) {
+            m_cachedBoundingRect = recomputeBoundingRect();
+            m_boundingRectDirty = false;
+        }
+        return m_cachedBoundingRect;
+    }
+    void invalidateBoundingRect() const
+    {
+        m_boundingRectDirty = true;
+        m_renderCacheDirty = true;
+    }
+    virtual QRect recomputeBoundingRect() const { return {}; }
+
     QString iconPath(const QColor& c) const
     {
         return ColorUtils::colorIsDark(c) ? PathInfo::whiteIconPath()
@@ -188,6 +204,20 @@ protected:
         painter.setPen(QPen(Qt::white, 1, Qt::DotLine));
         painter.drawRect(rect);
         painter.setPen(orig_pen);
+    }
+
+public:
+    const QPixmap& renderCache() const { return m_renderCache; }
+    void setRenderCache(const QPixmap& cache) const
+    {
+        m_renderCache = cache;
+        m_renderCacheDirty = false;
+    }
+    bool isRenderCacheDirty() const { return m_renderCacheDirty; }
+    void markRenderCacheDirty() const
+    {
+        m_renderCacheDirty = true;
+        invalidateBoundingRect();
     }
 
 public slots:
@@ -211,4 +241,8 @@ public slots:
 private:
     unsigned int m_count;
     bool m_editMode;
+    mutable QRect m_cachedBoundingRect;
+    mutable bool m_boundingRectDirty{ true };
+    mutable QPixmap m_renderCache;
+    mutable bool m_renderCacheDirty{ true };
 };

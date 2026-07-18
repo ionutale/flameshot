@@ -75,7 +75,7 @@ QString ArrowTool::description() const
     return tr("Set the Arrow as the paint tool");
 }
 
-QRect ArrowTool::boundingRect() const
+QRect ArrowTool::recomputeBoundingRect() const
 {
     if (!isValid()) {
         return {};
@@ -151,6 +151,7 @@ void ArrowTool::process(QPainter& painter, const QPixmap& pixmap)
     QPoint offset(2, 2);
 
     m_arrowPath = getArrowHead(head, tail, w);
+    invalidateBoundingRect();
 
     // Shadow (shaft + head)
     painter.setPen(

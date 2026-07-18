@@ -41,6 +41,7 @@ QPointer<CaptureTool> CaptureToolObjects::at(int index)
 void CaptureToolObjects::clear()
 {
     m_captureToolObjects.clear();
+    m_imageCache.clear();
 }
 
 QList<QPointer<CaptureTool>> CaptureToolObjects::captureToolObjects()
@@ -68,80 +69,96 @@ int CaptureToolObjects::find(const QPoint& pos, QSize captureSize)
     }
     QPixmap pixmap(captureSize);
     pixmap.fill(Qt::transparent);
-    QPainter painter(&pixmap);
-    // first attempt to find at exact position
-    int radius = SEARCH_RADIUS_NEAR;
-    int index = findWithRadius(painter, pixmap, pos, radius);
+    int index = findWithRadius(pixmap, pos, SEARCH_RADIUS_NEAR);
     if (-1 == index) {
-        // second attempt to find at position with radius
-        radius = SEARCH_RADIUS_FAR;
-        pixmap.fill(Qt::transparent);
-        index = findWithRadius(painter, pixmap, pos, radius);
+        index = findWithRadius(pixmap, pos, SEARCH_RADIUS_FAR);
     }
     return index;
 }
 
-int CaptureToolObjects::findWithRadius(QPainter& painter,
-                                       QPixmap& pixmap,
+int CaptureToolObjects::findWithRadius(QPixmap& pixmap,
                                        const QPoint& pos,
                                        int radius)
 {
-    int index = m_captureToolObjects.size() - 1;
-    bool useCache = true;
-    m_imageCache.clear();
-    if (m_imageCache.size() != m_captureToolObjects.size() && index >= 0) {
-        // TODO - is not optimal and cache will be used just after first tool
-        // object selecting
-        m_imageCache.clear();
-        useCache = false;
-    }
-    for (; index >= 0; --index) {
-        int currentRadius = radius;
-        QImage image;
+    for (int index = m_captureToolObjects.size() - 1; index >= 0; --index) {
         auto toolItem = m_captureToolObjects.at(index);
-        if (useCache) {
-            image = m_imageCache.at(index);
-        } else {
-            // create transparent image in memory and draw toolItem on it
-            toolItem->drawSearchArea(painter, pixmap);
+        if (toolItem.isNull())
+            continue;
 
-            // get color at mouse clicked position in area +/- currentRadius
-            image = pixmap.toImage();
-            m_imageCache.insert(0, image);
+        // Geometric prefilter: skip if click is outside bounding rect + radius
+        // margin
+        QRect toolRect = toolItem->boundingRect();
+        if (!toolRect.isEmpty() &&
+            !toolRect.adjusted(-radius, -radius, radius, radius)
+               .contains(pos)) {
+            continue;
         }
 
+        int currentRadius = radius;
+        QImage image;
+
+        // Use cached image if available (cache may be sparsely populated due to
+        // geometric prefilter skipping some tools)
+        if (index < m_imageCache.size() && !m_imageCache.at(index).isNull()) {
+            image = m_imageCache.at(index);
+        } else {
+            pixmap.fill(Qt::transparent);
+            QPainter painter(&pixmap);
+            toolItem->drawSearchArea(painter, pixmap);
+            painter.end();
+            image = pixmap.toImage();
+            if (index >= m_imageCache.size()) {
+                m_imageCache.resize(index + 1);
+            }
+            m_imageCache[index] = image;
+        }
         if (toolItem->type() == CaptureTool::TYPE_TEXT) {
             if (currentRadius > SEARCH_RADIUS_NEAR) {
-                // Text already has a big currentRadius and no need to search
-                // with a bit bigger currentRadius than
-                // SEARCH_RADIUS_TEXT_HANDICAP + SEARCH_RADIUS_NEAR
                 continue;
             }
-
-            // Text has spaces inside to need to take a bigger currentRadius for
-            // text objects search
             currentRadius += SEARCH_RADIUS_TEXT_HANDICAP;
         }
 
-        for (int x = pos.x() - currentRadius; x <= pos.x() + currentRadius;
-             ++x) {
-            for (int y = pos.y() - currentRadius; y <= pos.y() + currentRadius;
-                 ++y) {
-                QRgb rgb = image.pixel(x, y);
-                if (rgb != 0) {
-                    // object was found, return it index (layer index)
-                    return index;
+        // Direct buffer access instead of QImage::pixel()
+        // Runtime format check (Q_ASSERT is compiled out in release builds)
+        bool canUseDirectAccess =
+          image.format() == QImage::Format_ARGB32_Premultiplied ||
+          image.format() == QImage::Format_ARGB32 ||
+          image.format() == QImage::Format_RGB32;
+        const uchar* bits = image.constBits();
+        int bytesPerLine = image.bytesPerLine();
+        int xMin = qMax(0, pos.x() - currentRadius);
+        int xMax = qMin(image.width() - 1, pos.x() + currentRadius);
+        int yMin = qMax(0, pos.y() - currentRadius);
+        int yMax = qMin(image.height() - 1, pos.y() + currentRadius);
+
+        if (canUseDirectAccess) {
+            for (int y = yMin; y <= yMax; ++y) {
+                const QRgb* line =
+                  reinterpret_cast<const QRgb*>(bits + y * bytesPerLine);
+                for (int x = xMin; x <= xMax; ++x) {
+                    if (line[x] != 0) {
+                        return index;
+                    }
+                }
+            }
+        } else {
+            for (int y = yMin; y <= yMax; ++y) {
+                for (int x = xMin; x <= xMax; ++x) {
+                    if (image.pixel(x, y) != 0) {
+                        return index;
+                    }
                 }
             }
         }
     }
-    // no object at current pos found
     return -1;
 }
 
 CaptureToolObjects& CaptureToolObjects::operator=(
   const CaptureToolObjects& other)
 {
+    m_imageCache.clear();
     // remove extra items for this if size is bigger
     while (this->m_captureToolObjects.size() >
            other.m_captureToolObjects.size()) {

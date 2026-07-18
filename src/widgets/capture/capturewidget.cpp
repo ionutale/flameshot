@@ -482,13 +482,59 @@ void CaptureWidget::xywhTick()
 void CaptureWidget::onDisplayGridChanged(bool display)
 {
     m_displayGrid = display;
+    invalidateGridCache();
     repaint();
 }
 
 void CaptureWidget::onGridSizeChanged(int size)
 {
     m_gridSize = size;
+    invalidateGridCache();
     repaint();
+}
+
+void CaptureWidget::invalidateGridCache()
+{
+    m_gridCache = QPixmap();
+    m_gridCacheDirty = true;
+}
+
+void CaptureWidget::ensureGridCache()
+{
+    if (!m_gridCacheDirty || !m_displayGrid) {
+        return;
+    }
+
+    const auto scale{ m_context.screenshot.devicePixelRatio() };
+    auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
+    topLeft.rx() -= topLeft.x() % m_gridSize;
+    topLeft.ry() -= topLeft.y() % m_gridSize;
+    topLeft = mapFromGlobal(topLeft);
+
+    const int step = qMax(1, static_cast<int>(m_gridSize / scale));
+    const auto radius{ 1 * scale };
+
+    QRect gridRect(topLeft,
+                   QPoint(m_context.selection.right() / scale,
+                          m_context.selection.bottom() / scale));
+    auto cacheSize = gridRect.size() * scale;
+    m_gridCache = QPixmap(cacheSize);
+    m_gridCache.setDevicePixelRatio(scale);
+    m_gridCache.fill(Qt::transparent);
+
+    QPainter painter(&m_gridCache);
+    QColor gridColor = ConfigHandler().uiColor();
+    gridColor.setAlpha(100);
+    painter.setPen(gridColor);
+    painter.setBrush(QBrush(gridColor));
+
+    for (int y = 0; y < gridRect.height(); y += step) {
+        for (int x = 0; x < gridRect.width(); x += step) {
+            painter.drawEllipse(x, y, radius, radius);
+        }
+    }
+
+    m_gridCacheDirty = false;
 }
 
 void CaptureWidget::startColorGrab()
@@ -784,26 +830,14 @@ void CaptureWidget::paintEvent(QPaintEvent* paintEvent)
     }
 
     if (m_displayGrid) {
-        QColor uicolor = ConfigHandler().uiColor();
-        uicolor.setAlpha(100);
-        painter.setPen(uicolor);
-        painter.setBrush(QBrush(uicolor));
-
-        const auto scale{ m_context.screenshot.devicePixelRatio() };
-        auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
-        topLeft.rx() -= topLeft.x() % m_gridSize;
-        topLeft.ry() -= topLeft.y() % m_gridSize;
-        topLeft = mapFromGlobal(topLeft);
-
-        const auto step{ m_gridSize / scale };
-        const auto radius{ 1 * scale };
-
-        for (int y = topLeft.y(); y < m_context.selection.bottom() / scale;
-             y += step) {
-            for (int x = topLeft.x(); x < m_context.selection.right() / scale;
-                 x += step) {
-                painter.drawEllipse(x, y, radius, radius);
-            }
+        ensureGridCache();
+        if (!m_gridCache.isNull()) {
+            const auto scale{ m_context.screenshot.devicePixelRatio() };
+            auto topLeft = mapToGlobal(m_context.selection.topLeft() / scale);
+            topLeft.rx() -= topLeft.x() % m_gridSize;
+            topLeft.ry() -= topLeft.y() % m_gridSize;
+            topLeft = mapFromGlobal(topLeft);
+            painter.drawPixmap(topLeft, m_gridCache);
         }
     }
 
@@ -1213,6 +1247,7 @@ void CaptureWidget::wheelEvent(QWheelEvent* e)
 void CaptureWidget::resizeEvent(QResizeEvent* e)
 {
     QWidget::resizeEvent(e);
+    invalidateGridCache();
     m_context.widgetOffset = mapToGlobal(QPoint(0, 0));
 #ifdef FLAMESHOT_DEBUG_CAPTURE
     qDebug() << tr("Capture widget resized: %1x%2 offset %3,%4")
@@ -1407,6 +1442,7 @@ void CaptureWidget::initSelection()
         QRect constrainedToCaptureArea =
           m_selection->geometry().intersected(rect());
         m_context.selection = extendedRect(constrainedToCaptureArea);
+        invalidateGridCache();
 
         m_buttonHandler->hide();
         updateCursor();
@@ -1443,6 +1479,7 @@ void CaptureWidget::initSelection()
     m_selection->setVisible(!initialSelection.isNull());
     if (!initialSelection.isNull()) {
         m_context.selection = extendedRect(m_selection->geometry());
+        invalidateGridCache();
         emit m_selection->geometrySettled();
     }
 }
@@ -1839,8 +1876,6 @@ void CaptureWidget::updateTool(CaptureTool* tool)
         return;
     }
 
-    static QRect oldPreviewRect, oldToolObjectRect;
-
     QRect previewRect(tool->mousePreviewRect(m_context));
     previewRect += QMargins(previewRect.width(),
                             previewRect.height(),
@@ -1849,14 +1884,14 @@ void CaptureWidget::updateTool(CaptureTool* tool)
 
     QRect toolObjectRect = paddedUpdateRect(tool->boundingRect());
 
-    // old rects are united with current rects to handle sudden mouse movement
-    update(previewRect);
-    update(toolObjectRect);
-    update(oldPreviewRect);
-    update(oldToolObjectRect);
+    // Union of old and new dirty rects -- single update() call instead of 4
+    QRect dirtyRect = previewRect.united(toolObjectRect)
+                        .united(m_lastPreviewRect)
+                        .united(m_lastToolObjectRect);
+    update(dirtyRect);
 
-    oldPreviewRect = previewRect;
-    oldToolObjectRect = toolObjectRect;
+    m_lastPreviewRect = previewRect;
+    m_lastToolObjectRect = toolObjectRect;
 }
 
 void CaptureWidget::updateLayersPanel()
@@ -1898,12 +1933,21 @@ void CaptureWidget::pushToolToStack()
 
 void CaptureWidget::drawToolsData(bool drawSelection)
 {
-    // TODO refactor this for performance. The objects should not all be updated
-    // at once every time
     QPixmap pixmapItem = m_context.origScreenshot;
+
+    bool cascadeDirty = false;
     for (const auto& toolItem : m_captureToolObjects.captureToolObjects()) {
-        processPixmapWithTool(&pixmapItem, toolItem);
-        update(paddedUpdateRect(toolItem->boundingRect()));
+        if (toolItem.isNull())
+            continue;
+
+        if (cascadeDirty || toolItem->isRenderCacheDirty()) {
+            cascadeDirty = true;
+            QPixmap toolCache = pixmapItem;
+            processPixmapWithTool(&toolCache, toolItem);
+            toolItem->setRenderCache(toolCache);
+            update(paddedUpdateRect(toolItem->boundingRect()));
+        }
+        pixmapItem = toolItem->renderCache();
     }
 
     m_context.screenshot = pixmapItem;
@@ -2046,9 +2090,6 @@ void CaptureWidget::undo()
         m_panel->setActiveLayer(-1);
     }
 
-    // drawToolsData is called twice to update both previous and new regions
-    // FIXME this is a temporary workaround
-    drawToolsData();
     m_undoStack.undo();
     drawToolsData();
     updateLayersPanel();
@@ -2058,9 +2099,6 @@ void CaptureWidget::undo()
 
 void CaptureWidget::redo()
 {
-    // drawToolsData is called twice to update both previous and new regions
-    // FIXME this is a temporary workaround
-    drawToolsData();
     m_undoStack.redo();
     drawToolsData();
     update();

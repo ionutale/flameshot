@@ -52,7 +52,7 @@ QRect AbstractPathTool::mousePreviewRect(const CaptureContext& context) const
     return rect;
 }
 
-QRect AbstractPathTool::boundingRect() const
+QRect AbstractPathTool::recomputeBoundingRect() const
 {
     if (m_points.isEmpty()) {
         return {};
@@ -98,11 +98,13 @@ void AbstractPathTool::drawMove(const QPoint& p)
 void AbstractPathTool::onColorChanged(const QColor& c)
 {
     m_color = c;
+    markRenderCacheDirty();
 }
 
 void AbstractPathTool::onSizeChanged(int size)
 {
     m_thickness = size;
+    invalidateBoundingRect();
 }
 
 void AbstractPathTool::addPoint(const QPoint& point)
@@ -118,6 +120,7 @@ void AbstractPathTool::addPoint(const QPoint& point)
         m_pathArea.setBottom(point.y());
     }
     m_points.append(point);
+    invalidateBoundingRect();
 }
 
 void AbstractPathTool::move(const QPoint& mousePos)
@@ -130,6 +133,7 @@ void AbstractPathTool::move(const QPoint& mousePos)
     for (auto& m_point : m_points) {
         m_point += offset;
     }
+    invalidateBoundingRect();
 }
 
 const QPoint* AbstractPathTool::pos()

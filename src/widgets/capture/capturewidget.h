@@ -158,6 +158,9 @@ private:
 
     QPoint snapToGrid(const QPoint& point) const;
 
+    void ensureGridCache();
+    void invalidateGridCache();
+
     ////////////////////////////////////////
     // Class members
 
@@ -215,6 +218,10 @@ private:
     QPoint m_mousePressedPos;
     QPoint m_activeToolOffsetToMouseOnStart;
 
+    // Cached update rects for updateTool()
+    QRect m_lastPreviewRect;
+    QRect m_lastToolObjectRect;
+
     // XYWH display position and timer
     bool m_xywhDisplay;
     QTimer m_xywhTimer;
@@ -230,6 +237,8 @@ private:
     // Grid
     bool m_displayGrid{ false };
     int m_gridSize{ 10 };
+    QPixmap m_gridCache;
+    bool m_gridCacheDirty{ true };
 
     bool m_clipboardWorkaroundDone{ false };
 };

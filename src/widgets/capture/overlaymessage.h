@@ -38,6 +38,7 @@ private:
     static OverlayMessage* m_instance;
 
     OverlayMessage(QWidget* parent, const QRect& center);
+    ~OverlayMessage() override;
 
     void paintEvent(QPaintEvent*) override;
 

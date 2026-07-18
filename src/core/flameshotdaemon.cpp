@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QIODevice>
 #include <QPixmap>
+#include <QPixmapCache>
 #include <QRect>
 
 #if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
@@ -93,6 +94,8 @@ FlameshotDaemon::FlameshotDaemon()
                 enableTrayIcon(!config.disabledTrayIcon());
                 m_persist = !config.autoCloseIdleDaemon();
             });
+
+    QPixmapCache::setCacheLimit(512); // 512 KB (value is in kilobytes)
 
 #if !defined(DISABLE_UPDATE_CHECKER)
     if (ConfigHandler().checkForUpdates()) {
@@ -394,6 +397,7 @@ void FlameshotDaemon::handleReplyCheckUpdates(QNetworkReply* reply)
 {
     if (!ConfigHandler().checkForUpdates() &&
         !m_showManualCheckAppUpdateStatus) {
+        cleanupAfterUpdateCheck(reply);
         return;
     }
 
@@ -426,6 +430,17 @@ void FlameshotDaemon::handleReplyCheckUpdates(QNetworkReply* reply)
         }
     }
     m_showManualCheckAppUpdateStatus = false;
+
+    cleanupAfterUpdateCheck(reply);
+}
+
+void FlameshotDaemon::cleanupAfterUpdateCheck(QNetworkReply* reply)
+{
+    reply->deleteLater();
+    if (m_networkCheckUpdates) {
+        m_networkCheckUpdates->deleteLater();
+        m_networkCheckUpdates = nullptr;
+    }
 }
 #endif
 

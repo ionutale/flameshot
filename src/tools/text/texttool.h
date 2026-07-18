@@ -23,7 +23,7 @@ public:
     [[nodiscard]] bool closeOnButtonPressed() const override;
     [[nodiscard]] bool isSelectable() const override;
     [[nodiscard]] bool showMousePreview() const override;
-    [[nodiscard]] QRect boundingRect() const override;
+    [[nodiscard]] QRect recomputeBoundingRect() const override;
 
     [[nodiscard]] QIcon icon(const QColor& background,
                              bool inEditor) const override;

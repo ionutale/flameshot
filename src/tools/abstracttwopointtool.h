@@ -16,7 +16,7 @@ public:
     bool isSelectable() const override;
     bool showMousePreview() const override;
     QRect mousePreviewRect(const CaptureContext& context) const override;
-    QRect boundingRect() const override;
+    QRect recomputeBoundingRect() const override;
     void move(const QPoint& pos) override;
     const QPoint* pos() override;
     int size() const override { return m_thickness; };
