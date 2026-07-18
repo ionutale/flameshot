@@ -85,13 +85,15 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
 
     for (int index = m_captureToolObjects.size() - 1; index >= 0; --index) {
         auto toolItem = m_captureToolObjects.at(index);
-        if (toolItem.isNull()) continue;
+        if (toolItem.isNull())
+            continue;
 
         // Geometric prefilter: skip if click is outside bounding rect + radius
         // margin
         QRect toolRect = toolItem->boundingRect();
         if (!toolRect.isEmpty() &&
-            !toolRect.adjusted(-radius, -radius, radius, radius).contains(pos)) {
+            !toolRect.adjusted(-radius, -radius, radius, radius)
+               .contains(pos)) {
             continue;
         }
 

@@ -514,8 +514,9 @@ void CaptureWidget::ensureGridCache()
     const auto step{ m_gridSize / scale };
     const auto radius{ 1 * scale };
 
-    QRect gridRect(topLeft, QPoint(m_context.selection.right() / scale,
-                                   m_context.selection.bottom() / scale));
+    QRect gridRect(topLeft,
+                   QPoint(m_context.selection.right() / scale,
+                          m_context.selection.bottom() / scale));
     auto cacheSize = gridRect.size() * scale;
     m_gridCache = QPixmap(cacheSize);
     m_gridCache.setDevicePixelRatio(scale);
@@ -1885,8 +1886,8 @@ void CaptureWidget::updateTool(CaptureTool* tool)
 
     // Union of old and new dirty rects -- single update() call instead of 4
     QRect dirtyRect = previewRect.united(toolObjectRect)
-                      .united(m_lastPreviewRect)
-                      .united(m_lastToolObjectRect);
+                        .united(m_lastPreviewRect)
+                        .united(m_lastToolObjectRect);
     update(dirtyRect);
 
     m_lastPreviewRect = previewRect;
@@ -1936,7 +1937,8 @@ void CaptureWidget::drawToolsData(bool drawSelection)
 
     bool cascadeDirty = false;
     for (const auto& toolItem : m_captureToolObjects.captureToolObjects()) {
-        if (toolItem.isNull()) continue;
+        if (toolItem.isNull())
+            continue;
 
         if (cascadeDirty || toolItem->isRenderCacheDirty()) {
             cascadeDirty = true;

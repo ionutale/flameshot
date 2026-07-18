@@ -112,7 +112,6 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
         // generating a monochromatic box when the fringe is monochromatic
         std::normal_distribution<float> noise(0, 0.1f);
 
-
         QPoint const offset_top(0, selectionScaled.topLeft().y() == 0 ? 0 : -1);
         QPoint const offset_bottom(0,
                                    selectionScaled.bottomLeft().y() ==
@@ -201,7 +200,7 @@ void PixelateTool::process(QPainter& painter, const QPixmap& pixmap)
 
                 // weights of the horizontal resp. vertical interpolation
                 float const weight_h = (qMin(x, width - x) / width) -
-                                        (qMin(y, height - y) / height) + 0.5;
+                                       (qMin(y, height - y) / height) + 0.5;
 
                 float const weight_v = 1 - weight_h;
 
