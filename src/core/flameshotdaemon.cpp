@@ -12,6 +12,7 @@
 #include <QClipboard>
 #include <QIODevice>
 #include <QPixmap>
+#include <QPixmapCache>
 #include <QRect>
 
 #if !(defined(Q_OS_MACOS) || defined(Q_OS_WIN))
@@ -93,6 +94,8 @@ FlameshotDaemon::FlameshotDaemon()
                 enableTrayIcon(!config.disabledTrayIcon());
                 m_persist = !config.autoCloseIdleDaemon();
             });
+
+    QPixmapCache::setCacheLimit(512 * 1024);
 
 #if !defined(DISABLE_UPDATE_CHECKER)
     if (ConfigHandler().checkForUpdates()) {
