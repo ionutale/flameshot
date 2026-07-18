@@ -389,7 +389,8 @@ void SelectionWidget::paintEvent(QPaintEvent*)
 
     // Purple glow behind the border
     QPen glowPen(m_color, 6, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-    glowPen.setColor(QColor(m_color.red(), m_color.green(), m_color.blue(), 80));
+    glowPen.setColor(
+      QColor(m_color.red(), m_color.green(), m_color.blue(), 80));
     p.setPen(glowPen);
     p.setBrush(Qt::NoBrush);
     p.drawRect(r);

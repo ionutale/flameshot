@@ -47,15 +47,14 @@ QString CaptureButton::globalStyleSheet()
 
 QString CaptureButton::styleSheet() const
 {
-    QString baseSheet =
-      "CaptureButton { border: 1px solid rgba(%5,%6,%7,0.15);"
-      "padding: 3px 8px;"
-      "background-color: %1; color: %4 }"
-      "CaptureToolButton { border-radius: %3;"
-      "padding: 0; }"
-      "CaptureButton:hover { background-color: %2; }"
-      "CaptureButton:pressed:!hover { "
-      "background-color: %1; }";
+    QString baseSheet = "CaptureButton { border: 1px solid rgba(%5,%6,%7,0.15);"
+                        "padding: 3px 8px;"
+                        "background-color: %1; color: %4 }"
+                        "CaptureToolButton { border-radius: %3;"
+                        "padding: 0; }"
+                        "CaptureButton:hover { background-color: %2; }"
+                        "CaptureButton:pressed:!hover { "
+                        "background-color: %1; }";
     // define color when mouse is hovering
     QColor contrast = ColorUtils::contrastColor(m_mainColor);
     // foreground color
