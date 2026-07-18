@@ -76,7 +76,7 @@ QRect AbstractTwoPointTool::mousePreviewRect(
     return rect;
 }
 
-QRect AbstractTwoPointTool::boundingRect() const
+QRect AbstractTwoPointTool::recomputeBoundingRect() const
 {
     if (!isValid()) {
         return {};
@@ -100,11 +100,13 @@ void AbstractTwoPointTool::drawEnd(const QPoint& p)
 void AbstractTwoPointTool::drawMove(const QPoint& p)
 {
     m_points.second = p;
+    invalidateBoundingRect();
 }
 
 void AbstractTwoPointTool::drawMoveWithAdjustment(const QPoint& p)
 {
     m_points.second = m_points.first + adjustedVector(p - m_points.first);
+    invalidateBoundingRect();
 }
 
 void AbstractTwoPointTool::onColorChanged(const QColor& c)
@@ -115,6 +117,7 @@ void AbstractTwoPointTool::onColorChanged(const QColor& c)
 void AbstractTwoPointTool::onSizeChanged(int size)
 {
     m_thickness = size;
+    invalidateBoundingRect();
 }
 
 void AbstractTwoPointTool::paintMousePreview(QPainter& painter,
@@ -130,6 +133,7 @@ void AbstractTwoPointTool::drawStart(const CaptureContext& context)
     m_points.first = context.mousePos;
     m_points.second = context.mousePos;
     onSizeChanged(context.toolSize);
+    invalidateBoundingRect();
 }
 
 QPoint AbstractTwoPointTool::adjustedVector(QPoint v) const
@@ -179,6 +183,7 @@ void AbstractTwoPointTool::move(const QPoint& pos)
     QPoint offset = m_points.second - m_points.first;
     m_points.first = pos;
     m_points.second = m_points.first + offset;
+    invalidateBoundingRect();
 }
 
 const QPoint* AbstractTwoPointTool::pos()

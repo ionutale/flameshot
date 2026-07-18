@@ -104,7 +104,7 @@ public:
     {
         return {};
     };
-    virtual QRect boundingRect() const = 0;
+    virtual QRect boundingRect() const { return cachedBoundingRect(); }
     virtual bool handleMouseWheelEvent(int delta,
                                        bool adjustmentButtonPressed,
                                        CaptureContext& context)
@@ -174,6 +174,18 @@ protected:
         to->m_count = from->m_count;
     }
 
+    // Cached bounding rect
+    QRect cachedBoundingRect() const
+    {
+        if (m_boundingRectDirty) {
+            m_cachedBoundingRect = recomputeBoundingRect();
+            m_boundingRectDirty = false;
+        }
+        return m_cachedBoundingRect;
+    }
+    void invalidateBoundingRect() const { m_boundingRectDirty = true; }
+    virtual QRect recomputeBoundingRect() const { return {}; }
+
     QString iconPath(const QColor& c) const
     {
         return ColorUtils::colorIsDark(c) ? PathInfo::whiteIconPath()
@@ -211,4 +223,6 @@ public slots:
 private:
     unsigned int m_count;
     bool m_editMode;
+    mutable QRect m_cachedBoundingRect;
+    mutable bool m_boundingRectDirty{ true };
 };

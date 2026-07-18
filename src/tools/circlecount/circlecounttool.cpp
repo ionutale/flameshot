@@ -46,7 +46,7 @@ QRect CircleCountTool::mousePreviewRect(const CaptureContext& context) const
     return rect;
 }
 
-QRect CircleCountTool::boundingRect() const
+QRect CircleCountTool::recomputeBoundingRect() const
 {
     if (!isValid()) {
         return {};
@@ -264,6 +264,7 @@ void CircleCountTool::drawStart(const CaptureContext& context)
     // ------------------------------------------------------------------
     AbstractTwoPointTool::drawStart(context);
     m_valid = true;
+    invalidateBoundingRect();
 }
 
 void CircleCountTool::pressed(CaptureContext& context)

@@ -38,7 +38,7 @@ QString PixelateTool::description() const
     return tr("Set Pixelate as the paint tool.");
 }
 
-QRect PixelateTool::boundingRect() const
+QRect PixelateTool::recomputeBoundingRect() const
 {
     return QRect(points().first, points().second).normalized();
 }

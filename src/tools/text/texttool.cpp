@@ -57,7 +57,7 @@ bool TextTool::showMousePreview() const
     return false;
 }
 
-QRect TextTool::boundingRect() const
+QRect TextTool::recomputeBoundingRect() const
 {
     return m_textArea;
 }
@@ -240,6 +240,7 @@ void TextTool::paintMousePreview(QPainter& painter,
 void TextTool::drawEnd(const QPoint& point)
 {
     m_textArea.moveTo(point);
+    invalidateBoundingRect();
 }
 
 void TextTool::drawMove(const QPoint& point)
@@ -251,6 +252,7 @@ void TextTool::drawStart(const CaptureContext& context)
 {
     m_color = context.color;
     m_size = context.toolSize;
+    invalidateBoundingRect();
     emit requestAction(REQ_ADD_CHILD_WIDGET);
 }
 
@@ -271,6 +273,7 @@ void TextTool::onSizeChanged(int size)
 {
     m_size = size;
     m_font.setPointSize(m_size + BASE_POINT_SIZE);
+    invalidateBoundingRect();
     if (m_widget != nullptr) {
         m_widget->setFont(m_font);
     }
@@ -327,6 +330,7 @@ void TextTool::updateFontItalic(const bool italic)
 void TextTool::move(const QPoint& pos)
 {
     m_textArea.moveTo(pos);
+    invalidateBoundingRect();
 }
 
 void TextTool::updateAlignment(Qt::AlignmentFlag alignment)

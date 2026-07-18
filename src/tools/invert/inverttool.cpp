@@ -36,7 +36,7 @@ QString InvertTool::description() const
     return tr("Set Inverter as the paint tool");
 }
 
-QRect InvertTool::boundingRect() const
+QRect InvertTool::recomputeBoundingRect() const
 {
     return QRect(points().first, points().second).normalized();
 }
