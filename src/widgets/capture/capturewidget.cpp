@@ -342,26 +342,26 @@ CaptureWidget::~CaptureWidget()
         geometry.setTopLeft(geometry.topLeft() + m_context.widgetOffset);
 
 #ifdef FLAMESHOT_DEBUG_CAPTURE
-                qDebug() << tr("Capture export details:");
-                qDebug() << tr("  Screenshot DPR: %1").arg(scale);
-                qDebug() << tr("  Selection widget geometry: %1x%2+%3+%4")
-                                            .arg(m_selection->geometry().width())
-                                            .arg(m_selection->geometry().height())
-                                            .arg(m_selection->geometry().x())
-                                            .arg(m_selection->geometry().y());
-                qDebug() << tr("  Selection in screenshot pixels: %1x%2+%3+%4")
-                                            .arg(m_context.selection.width())
-                                            .arg(m_context.selection.height())
-                                            .arg(m_context.selection.x())
-                                            .arg(m_context.selection.y());
-                qDebug() << tr("  Widget offset: %1,%2")
-                                            .arg(m_context.widgetOffset.x())
-                                            .arg(m_context.widgetOffset.y());
-                qDebug() << tr("  Export geometry: %1x%2+%3+%4")
-                                            .arg(geometry.width())
-                                            .arg(geometry.height())
-                                            .arg(geometry.x())
-                                            .arg(geometry.y());
+        qDebug() << tr("Capture export details:");
+        qDebug() << tr("  Screenshot DPR: %1").arg(scale);
+        qDebug() << tr("  Selection widget geometry: %1x%2+%3+%4")
+                      .arg(m_selection->geometry().width())
+                      .arg(m_selection->geometry().height())
+                      .arg(m_selection->geometry().x())
+                      .arg(m_selection->geometry().y());
+        qDebug() << tr("  Selection in screenshot pixels: %1x%2+%3+%4")
+                      .arg(m_context.selection.width())
+                      .arg(m_context.selection.height())
+                      .arg(m_context.selection.x())
+                      .arg(m_context.selection.y());
+        qDebug() << tr("  Widget offset: %1,%2")
+                      .arg(m_context.widgetOffset.x())
+                      .arg(m_context.widgetOffset.y());
+        qDebug() << tr("  Export geometry: %1x%2+%3+%4")
+                      .arg(geometry.width())
+                      .arg(geometry.height())
+                      .arg(geometry.x())
+                      .arg(geometry.y());
 #endif
 
         Flameshot::instance()->exportCapture(

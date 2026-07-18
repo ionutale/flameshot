@@ -174,4 +174,7 @@ private:
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
     QCheckBox* m_useX11LegacyScreenshot;
 #endif
+#if defined(Q_OS_WIN)
+    QCheckBox* m_captureActiveScreenOnly;
+#endif
 };

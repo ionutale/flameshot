@@ -142,6 +142,7 @@ void GeneralConf::_updateComponents(bool allowEmptySavePath)
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MACOS)
     m_useX11LegacyScreenshot->setChecked(config.useX11LegacyScreenshot());
 #endif
+#endif
 }
 
 void GeneralConf::updateComponents()
@@ -888,10 +889,12 @@ void GeneralConf::initInsecurePixelate()
 #if defined(Q_OS_WIN)
 void GeneralConf::initCaptureActiveScreenOnly()
 {
-    m_captureActiveScreenOnly = new QCheckBox(tr("Capture only active screen"), this);
+    m_captureActiveScreenOnly =
+      new QCheckBox(tr("Capture only active screen"), this);
     m_captureActiveScreenOnly->setToolTip(
       tr("Limit screenshot to the screen containing the mouse cursor."));
-    m_captureActiveScreenOnly->setChecked(ConfigHandler().captureActiveScreenOnly());
+    m_captureActiveScreenOnly->setChecked(
+      ConfigHandler().captureActiveScreenOnly());
     m_scrollAreaLayout->addWidget(m_captureActiveScreenOnly);
 
     connect(m_captureActiveScreenOnly,
