@@ -30,16 +30,6 @@ protected:
 public slots:
     void pressed(CaptureContext& context) override;
 
-private slots:
-    void setArrowStyle(int style);
-
 private:
-    enum class ArrowStyle
-    {
-        Default = 0,
-        Curved = 1,
-    };
-
     QPainterPath m_arrowPath;
-    ArrowStyle m_arrowStyle = ArrowStyle::Default;
 };

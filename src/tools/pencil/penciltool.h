@@ -12,6 +12,7 @@ public:
     explicit PencilTool(QObject* parent = nullptr);
 
     QIcon icon(const QColor& background, bool inEditor) const override;
+    QPainterPath smoothPath() const;
     QString name() const override;
     QString description() const override;
 

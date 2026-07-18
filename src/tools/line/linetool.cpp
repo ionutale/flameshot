@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2017-2019 Alejandro Sirgo Rica & Contributors
 
 #include "linetool.h"
+#include "utils/colorutils.h"
 
 #include <QPainter>
 
@@ -43,7 +44,17 @@ CaptureTool* LineTool::copy(QObject* parent)
 void LineTool::process(QPainter& painter, const QPixmap& pixmap)
 {
     Q_UNUSED(pixmap)
-    painter.setPen(QPen(color(), size()));
+    QColor borderColor = ColorUtils::contrastColor(color());
+    int w = size();
+    QPoint offset(2, 2);
+    // Shadow
+    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.drawLine(points().first + offset, points().second + offset);
+    // Border
+    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.drawLine(points().first, points().second);
+    // Main
+    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(points().first, points().second);
 }
 

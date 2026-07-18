@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2017-2019 Alejandro Sirgo Rica & Contributors
 
 #include "circletool.h"
+#include "utils/colorutils.h"
 
 #include <QPainter>
 
@@ -41,8 +42,26 @@ CaptureTool* CircleTool::copy(QObject* parent)
 void CircleTool::process(QPainter& painter, const QPixmap& pixmap)
 {
     Q_UNUSED(pixmap)
-    painter.setPen(QPen(color(), size()));
-    painter.drawEllipse(QRect(points().first, points().second));
+    QColor borderColor = ColorUtils::contrastColor(color());
+    QColor fillColor(color().red(), color().green(), color().blue(), 20);
+    int w = size();
+    QRect r(points().first, points().second);
+    QPoint offset(2, 2);
+    // Shadow
+    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(r.translated(offset));
+    // Subtle fill
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(fillColor);
+    painter.drawEllipse(r);
+    // Border
+    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setBrush(Qt::NoBrush);
+    painter.drawEllipse(r);
+    // Main outline
+    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.drawEllipse(r);
 }
 
 void CircleTool::pressed(CaptureContext& context)

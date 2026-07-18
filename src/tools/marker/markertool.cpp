@@ -2,6 +2,7 @@
 // SPDX-FileCopyrightText: 2017-2019 Alejandro Sirgo Rica & Contributors
 
 #include "markertool.h"
+#include "utils/colorutils.h"
 
 #include <QPainter>
 
@@ -52,12 +53,24 @@ CaptureTool* MarkerTool::copy(QObject* parent)
 void MarkerTool::process(QPainter& painter, const QPixmap& pixmap)
 {
     Q_UNUSED(pixmap)
+    QColor borderColor = ColorUtils::contrastColor(color());
+    int w = size();
+    QPoint offset(2, 2);
     auto compositionMode = painter.compositionMode();
     qreal opacity = painter.opacity();
     auto pen = painter.pen();
+    // Shadow
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    painter.setOpacity(1.0);
+    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.drawLine(points().first + offset, points().second + offset);
+    // Border
+    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.drawLine(points().first, points().second);
+    // Main
     painter.setCompositionMode(QPainter::CompositionMode_Multiply);
     painter.setOpacity(0.35);
-    painter.setPen(QPen(color(), size()));
+    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(points().first, points().second);
     painter.setPen(pen);
     painter.setOpacity(opacity);

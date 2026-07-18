@@ -4,6 +4,8 @@
 #include "circlecounttool.h"
 #include "utils/colorutils.h"
 
+#include <QPainterPath>
+
 #include <QPainter>
 #include <QPainterPath>
 
@@ -114,9 +116,7 @@ void CircleCountTool::process(QPainter& painter, const QPixmap& pixmap)
     QLineF line(points().first, points().second);
     // if the mouse is outside of the bubble, draw the pointer
     if (line.length() > bubble_size) {
-        painter.setPen(QPen(color(), 0));
-        painter.setBrush(color());
-
+        QPoint offset(2, 2);
         int middleX = points().first.x();
         int middleY = points().first.y();
 
@@ -131,8 +131,42 @@ void CircleCountTool::process(QPainter& painter, const QPixmap& pixmap)
         path.lineTo(points().second);
         path.lineTo(p2);
         path.lineTo(points().first);
+
+        QColor borderColor = ColorUtils::contrastColor(color());
+
+        // Shadow
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(QColor(0, 0, 0, 40));
+        painter.translate(offset);
+        painter.drawPath(path);
+        painter.translate(-offset);
+
+        // Border
+        painter.setPen(QPen(borderColor, 3));
+        painter.setBrush(borderColor);
+        painter.drawPath(path);
+
+        // Main
+        painter.setPen(QPen(color(), 0, Qt::SolidLine, Qt::RoundCap));
+        painter.setBrush(color());
         painter.drawPath(path);
     }
+
+    QPoint bOffset(2, 2);
+    // Shadow for outer ring
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(0, 0, 0, 40));
+    painter.drawEllipse(
+      points().first + bOffset, bubble_size + PADDING_VALUE, bubble_size + PADDING_VALUE);
+
+    QColor borderColor = ColorUtils::contrastColor(color());
+    // Border for outer ring
+    QPainterPathStroker stroker;
+    stroker.setWidth(3);
+    stroker.setCapStyle(Qt::RoundCap);
+    QPainterPath outerRing;
+    outerRing.addEllipse(points().first, bubble_size + PADDING_VALUE, bubble_size + PADDING_VALUE);
+    painter.fillPath(stroker.createStroke(outerRing), borderColor);
 
     painter.setPen(contrastColor);
     painter.setBrush(antiContrastColor);
