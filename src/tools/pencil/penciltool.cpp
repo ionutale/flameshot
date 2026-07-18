@@ -72,15 +72,18 @@ void PencilTool::process(QPainter& painter, const QPixmap& pixmap)
         return;
     }
     // Shadow
-    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.translate(offset);
     painter.drawPath(path);
     painter.translate(-offset);
     // Border
-    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawPath(path);
     // Main
-    painter.setPen(QPen(m_color, w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(m_color, w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawPath(path);
 }
 

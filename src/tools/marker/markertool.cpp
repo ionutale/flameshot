@@ -62,15 +62,18 @@ void MarkerTool::process(QPainter& painter, const QPixmap& pixmap)
     // Shadow
     painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
     painter.setOpacity(1.0);
-    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(points().first + offset, points().second + offset);
     // Border
-    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(points().first, points().second);
     // Main
     painter.setCompositionMode(QPainter::CompositionMode_Multiply);
     painter.setOpacity(0.35);
-    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawLine(points().first, points().second);
     painter.setPen(pen);
     painter.setOpacity(opacity);

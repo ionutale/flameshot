@@ -30,8 +30,7 @@ QPainterPath getArrowHead(QPointF p1, QPointF p2, const int thickness)
     const qreal baseDistance = qMin(line.length(), headLength);
     const qreal notchDepth = qMin(baseDistance * 0.45, halfWidth);
 
-    const QPointF baseCenter =
-      p2 - direction * (baseDistance - notchDepth);
+    const QPointF baseCenter = p2 - direction * (baseDistance - notchDepth);
     const QPointF baseLeft = baseCenter + normal * halfWidth;
     const QPointF baseRight = baseCenter - normal * halfWidth;
     const QPointF notch = baseCenter + direction * notchDepth;
@@ -154,7 +153,8 @@ void ArrowTool::process(QPainter& painter, const QPixmap& pixmap)
     m_arrowPath = getArrowHead(head, tail, w);
 
     // Shadow (shaft + head)
-    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(QColor(0, 0, 0, 40));
     painter.translate(offset);
     painter.drawLine(head, tail);
@@ -162,7 +162,8 @@ void ArrowTool::process(QPainter& painter, const QPixmap& pixmap)
     painter.translate(-offset);
 
     // Shaft border
-    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(Qt::NoBrush);
     painter.drawLine(head, tail);
 

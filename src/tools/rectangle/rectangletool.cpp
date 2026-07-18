@@ -57,16 +57,19 @@ void RectangleTool::process(QPainter& painter, const QPixmap& pixmap)
         QPainterPath path;
         path.addRoundedRect(QRectF(rect), cornerRadius, cornerRadius);
         // Shadow
-        painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+        painter.setPen(QPen(
+          QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
         painter.setBrush(Qt::NoBrush);
         painter.translate(offset);
         painter.drawPath(path);
         painter.translate(-offset);
         // Border
-        painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
+        painter.setPen(QPen(
+          borderColor, w + 2, Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
         painter.drawPath(path);
         // Main
-        painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
+        painter.setPen(
+          QPen(color(), w, Qt::SolidLine, Qt::SquareCap, Qt::RoundJoin));
         painter.drawPath(path);
     } else {
         // Thick: filled rounded rect

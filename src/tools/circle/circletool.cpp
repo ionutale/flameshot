@@ -48,7 +48,8 @@ void CircleTool::process(QPainter& painter, const QPixmap& pixmap)
     QRect r(points().first, points().second);
     QPoint offset(2, 2);
     // Shadow
-    painter.setPen(QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(QColor(0, 0, 0, 40), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(Qt::NoBrush);
     painter.drawEllipse(r.translated(offset));
     // Subtle fill
@@ -56,11 +57,13 @@ void CircleTool::process(QPainter& painter, const QPixmap& pixmap)
     painter.setBrush(fillColor);
     painter.drawEllipse(r);
     // Border
-    painter.setPen(QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(borderColor, w + 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.setBrush(Qt::NoBrush);
     painter.drawEllipse(r);
     // Main outline
-    painter.setPen(QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+    painter.setPen(
+      QPen(color(), w, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
     painter.drawEllipse(r);
 }
 
