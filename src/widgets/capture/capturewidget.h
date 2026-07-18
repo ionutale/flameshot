@@ -215,6 +215,10 @@ private:
     QPoint m_mousePressedPos;
     QPoint m_activeToolOffsetToMouseOnStart;
 
+    // Cached update rects for updateTool()
+    QRect m_lastPreviewRect;
+    QRect m_lastToolObjectRect;
+
     // XYWH display position and timer
     bool m_xywhDisplay;
     QTimer m_xywhTimer;

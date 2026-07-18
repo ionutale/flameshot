@@ -41,6 +41,7 @@ QPointer<CaptureTool> CaptureToolObjects::at(int index)
 void CaptureToolObjects::clear()
 {
     m_captureToolObjects.clear();
+    m_imageCache.clear();
 }
 
 QList<QPointer<CaptureTool>> CaptureToolObjects::captureToolObjects()
@@ -118,6 +119,9 @@ int CaptureToolObjects::findWithRadius(QPainter& painter,
         }
 
         // Direct buffer access instead of QImage::pixel()
+        Q_ASSERT(image.format() == QImage::Format_ARGB32_Premultiplied ||
+                 image.format() == QImage::Format_ARGB32 ||
+                 image.format() == QImage::Format_RGB32);
         const uchar* bits = image.constBits();
         int bytesPerLine = image.bytesPerLine();
         int xMin = qMax(0, pos.x() - currentRadius);

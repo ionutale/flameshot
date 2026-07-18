@@ -1,0 +1,85 @@
+<h2>Steve Jobs' Take on Flameshot Shapes</h2>
+<p class="subtitle">"The smallest of details matter. The line endings. The curve of an arrow. The way a shape sits on the page."</p>
+
+<div class="section">
+  <h3>Current Problems</h3>
+  <div class="cards" data-multiselect>
+    <div class="card" data-choice="caps" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Sharp Line Endings</h3>
+        <p>All lines use <strong>SquareCap</strong> and <strong>BevelJoin</strong> — sharp, ugly corners. Apple uses RoundCap/RoundJoin everywhere. A line with SquareCap extends past its endpoint by half the width. Rounded caps feel intentional, finished.</p>
+      </div>
+    </div>
+    <div class="card" data-choice="arrow" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Clipped Arrowheads</h3>
+        <p>The arrow shaft is shortened by its thickness so it doesn't poke through the head. But this creates a visible gap. Apple would draw the head smoothly overlapping the shaft with no gap.</p>
+      </div>
+    </div>
+    <div class="card" data-choice="rect" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Rectangle Fills Instead of Strokes</h3>
+        <p>When you set thickness > 0 on a rectangle, it <strong>fills</strong> with rounded corners — it doesn't stroke the outline. This means you can't draw a thin outlined rectangle. Apple would separate stroke vs fill.</p>
+      </div>
+    </div>
+    <div class="card" data-choice="flat" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Flat Shapes, No Depth</h3>
+        <p>No shadows, no subtle glow, no sense of material. Everything sits flat on the image. Apple would add a whisper of a shadow to make shapes feel deliberate, like they sit <em>on top</em> of the image.</p>
+      </div>
+    </div>
+    <div class="card" data-choice="pencil" onclick="toggleSelect(this)">
+      <div class="card-body">
+        <h3>Jagged Pencil Paths</h3>
+        <p>Pencil tool uses raw <code>drawPolyline()</code> — every mouse movement becomes a straight segment. No smoothing. Apple would apply bezier curve fitting for a smooth, fluid stroke.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>What Would Apple Do?</h3>
+
+  <table style="width:100%;border-collapse:collapse;text-align:left">
+    <tr style="border-bottom:1px solid #ddd">
+      <th style="padding:6px 10px">Tool</th>
+      <th style="padding:6px 10px">Change</th>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>All tools</strong></td>
+      <td style="padding:6px 10px">RoundCap + RoundJoin on every line stroke. Subtle drop shadow on shapes.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Arrow</strong></td>
+      <td style="padding:6px 10px">Redrawn arrowhead with smooth curves (bezier), no gap with shaft. Think Photos app markup.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Line</strong></td>
+      <td style="padding:6px 10px">Rounded caps + join. Option to make it a filled pill shape instead of just a stroke.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Rectangle</strong></td>
+      <td style="padding:6px 10px">Render as stroked outline (with thickness) regardless of size. Rounded corners always on.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Circle</strong></td>
+      <td style="padding:6px 10px">Rounded strokes. Optional subtle fill at lower opacity.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Pencil</strong></td>
+      <td style="padding:6px 10px">Bezier curve fitting — smooth, elegant lines instead of jagged polylines.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>CircleCount</strong></td>
+      <td style="padding:6px 10px">Already the most polished tool. Keep as-is, just add rounded strokes.</td>
+    </tr>
+    <tr style="border-bottom:1px solid #eee">
+      <td style="padding:6px 10px"><strong>Marker</strong></td>
+      <td style="padding:6px 10px">Softer edges — use QPainterPath with rounded cap/join on the highlight.</td>
+    </tr>
+  </table>
+</div>
+
+<div class="section">
+  <p>Which pain points resonate? Click any that matter, then tell me in terminal.</p>
+</div>

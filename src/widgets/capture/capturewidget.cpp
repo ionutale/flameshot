@@ -1839,8 +1839,6 @@ void CaptureWidget::updateTool(CaptureTool* tool)
         return;
     }
 
-    static QRect oldPreviewRect, oldToolObjectRect;
-
     QRect previewRect(tool->mousePreviewRect(m_context));
     previewRect += QMargins(previewRect.width(),
                             previewRect.height(),
@@ -1849,14 +1847,14 @@ void CaptureWidget::updateTool(CaptureTool* tool)
 
     QRect toolObjectRect = paddedUpdateRect(tool->boundingRect());
 
-    // old rects are united with current rects to handle sudden mouse movement
-    update(previewRect);
-    update(toolObjectRect);
-    update(oldPreviewRect);
-    update(oldToolObjectRect);
+    // Union of old and new dirty rects -- single update() call instead of 4
+    QRect dirtyRect = previewRect.united(toolObjectRect)
+                      .united(m_lastPreviewRect)
+                      .united(m_lastToolObjectRect);
+    update(dirtyRect);
 
-    oldPreviewRect = previewRect;
-    oldToolObjectRect = toolObjectRect;
+    m_lastPreviewRect = previewRect;
+    m_lastToolObjectRect = toolObjectRect;
 }
 
 void CaptureWidget::updateLayersPanel()
