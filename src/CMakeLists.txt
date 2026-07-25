@@ -463,17 +463,22 @@ if (APPLE)
     )
 
 # Always sign the app bundle (either with identity or ad hoc)
+    set(ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/packaging/macos/flameshot.entitlements")
     if(CODE_SIGN_IDENTITY AND NOT CODE_SIGN_IDENTITY STREQUAL "")
         # Identity-based signing (requires Developer ID)
         add_custom_command(TARGET flameshot POST_BUILD
             COMMAND codesign --force --deep --sign "${CODE_SIGN_IDENTITY}" 
-                    --options runtime --timestamp "$<TARGET_BUNDLE_DIR:flameshot>"
+                    --options runtime --timestamp
+                    --entitlements "${ENTITLEMENTS_FILE}"
+                    "$<TARGET_BUNDLE_DIR:flameshot>"
             COMMENT "Code signing app bundle with ${CODE_SIGN_IDENTITY}"
         )
     else()
         # Ad hoc signing 
         add_custom_command(TARGET flameshot POST_BUILD
-            COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:flameshot>"
+            COMMAND codesign --force --deep --sign -
+                    --entitlements "${ENTITLEMENTS_FILE}"
+                    "$<TARGET_BUNDLE_DIR:flameshot>"
             COMMENT "Ad hoc code signing app bundle (no identity required)"
         )
     endif()
@@ -486,19 +491,23 @@ if (APPLE)
            COMMENT "Deploying Qt libraries"
        )
        
-       # Re-sign after macdeployqt (it modifies the bundle)
-       if(CODE_SIGN_IDENTITY AND NOT CODE_SIGN_IDENTITY STREQUAL "")
-           add_custom_command(TARGET flameshot POST_BUILD
-               COMMAND codesign --force --deep --sign "${CODE_SIGN_IDENTITY}" 
-                       --options runtime --timestamp "$<TARGET_BUNDLE_DIR:flameshot>"
-               COMMENT "Re-signing app bundle after Qt deployment"
-           )
-       else()
-           add_custom_command(TARGET flameshot POST_BUILD
-               COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:flameshot>"
-               COMMENT "Re-signing app bundle after Qt deployment (ad hoc)"
-           )
-       endif()
+        # Re-sign after macdeployqt (it modifies the bundle)
+        if(CODE_SIGN_IDENTITY AND NOT CODE_SIGN_IDENTITY STREQUAL "")
+            add_custom_command(TARGET flameshot POST_BUILD
+                COMMAND codesign --force --deep --sign "${CODE_SIGN_IDENTITY}" 
+                        --options runtime --timestamp
+                        --entitlements "${ENTITLEMENTS_FILE}"
+                        "$<TARGET_BUNDLE_DIR:flameshot>"
+                COMMENT "Re-signing app bundle after Qt deployment"
+            )
+        else()
+            add_custom_command(TARGET flameshot POST_BUILD
+                COMMAND codesign --force --deep --sign -
+                        --entitlements "${ENTITLEMENTS_FILE}"
+                        "$<TARGET_BUNDLE_DIR:flameshot>"
+                COMMENT "Re-signing app bundle after Qt deployment (ad hoc)"
+            )
+        endif()
    else()
        message(WARNING "macdeployqt not found. App may not run on systems without Qt installed.")
    endif()

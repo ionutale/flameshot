@@ -89,9 +89,21 @@ Flameshot::Flameshot()
     qApp->setStyleSheet(StyleSheet);
 
 #if defined(Q_OS_MACOS)
-    // Request Screen Recording permission via the proper CoreGraphics API
-    if (!CGPreflightScreenCaptureAccess()) {
-        CGRequestScreenCaptureAccess();
+    if (CGPreflightScreenCaptureAccess()) {
+        AbstractLogger::info() << "Screen recording permission already granted";
+    } else {
+        AbstractLogger::info()
+          << "Screen recording permission not granted, requesting...";
+        bool granted = CGRequestScreenCaptureAccess();
+        if (granted) {
+            AbstractLogger::info()
+              << "Screen recording permission granted by user";
+        } else {
+            AbstractLogger::warning()
+              << "Screen recording permission denied. "
+              << "Enable it in System Settings > Privacy & Security "
+              << "> Screen & System Audio Recording.";
+        }
     }
 #endif
 #if (defined(Q_OS_MACOS) || defined(Q_OS_WIN))
