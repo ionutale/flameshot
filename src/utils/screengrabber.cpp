@@ -13,13 +13,13 @@
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QLabel>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPixmap>
 #include <QProcess>
 #include <QScreen>
 #include <QTimer>
-#include <QMessageBox>
 #include <QWidget>
 #include <algorithm>
 
