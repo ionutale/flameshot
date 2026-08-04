@@ -13,7 +13,6 @@
 #include <QImageReader>
 #include <QKeyEvent>
 #include <QLabel>
-#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QPixmap>
@@ -22,10 +21,6 @@
 #include <QTimer>
 #include <QWidget>
 #include <algorithm>
-
-#if defined(Q_OS_MACOS)
-#include <CoreGraphics/CoreGraphics.h>
-#endif
 #include <limits>
 
 #ifdef FLAMESHOT_DEBUG_CAPTURE
@@ -251,17 +246,6 @@ QPixmap ScreenGrabber::grabEntireDesktop(bool& ok, int preSelectedMonitor)
     QPixmap screenshot;
 
 #if defined(Q_OS_MACOS)
-    if (!CGPreflightScreenCaptureAccess()) {
-        CGRequestScreenCaptureAccess();
-        if (!CGPreflightScreenCaptureAccess()) {
-            AbstractLogger::error()
-              << tr("Screen recording permission denied. "
-                    "Enable it in System Settings > Privacy & Security "
-                    "> Screen & System Audio Recording.");
-            ok = false;
-            return QPixmap();
-        }
-    }
     QScreen* currentScreen = QGuiAppCurrentScreen().currentScreen();
     if (!currentScreen) {
         AbstractLogger::error() << tr("Unable to get current screen");
@@ -269,6 +253,11 @@ QPixmap ScreenGrabber::grabEntireDesktop(bool& ok, int preSelectedMonitor)
         return QPixmap();
     }
     m_selectedMonitor = QGuiApplication::screens().indexOf(currentScreen);
+    if (m_selectedMonitor < 0) {
+        AbstractLogger::error() << tr("Unable to get current screen");
+        ok = false;
+        return QPixmap();
+    }
     const QRect geom = currentScreen->geometry();
     screenshot = currentScreen->grabWindow(
       wid, geom.x(), geom.y(), geom.width(), geom.height());
@@ -312,17 +301,6 @@ QPixmap ScreenGrabber::grabFullDesktop(bool& ok)
     QPixmap screenshot;
 
 #if defined(Q_OS_MACOS)
-    if (!CGPreflightScreenCaptureAccess()) {
-        CGRequestScreenCaptureAccess();
-        if (!CGPreflightScreenCaptureAccess()) {
-            AbstractLogger::error()
-              << tr("Screen recording permission denied. "
-                    "Enable it in System Settings > Privacy & Security "
-                    "> Screen & System Audio Recording.");
-            ok = false;
-            return QPixmap();
-        }
-    }
     // On macOS, composite all screens into a single pixmap.
     const QList<QScreen*> screens = QGuiApplication::screens();
     QRect totalGeom;

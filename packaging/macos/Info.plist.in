@@ -26,8 +26,6 @@
     <string>${CMAKE_OSX_DEPLOYMENT_TARGET}</string>
     <key>NSHighResolutionCapable</key>
     <true/>
-    <key>NSScreenCaptureDescription</key>
-    <string>Flameshot needs screen recording access to capture screenshots of your screen.</string>
     <key>LSUIElement</key>
     <true/>
 </dict>
