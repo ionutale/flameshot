@@ -83,6 +83,13 @@ public slots:
 private:
     Flameshot();
     bool resolveAnyConfigErrors();
+#if defined(Q_OS_MACOS)
+    // Checks TCC ScreenCapture permission on demand (lazy, not at startup).
+    // Returns true when capture is allowed. Triggers the system prompt only
+    // when there is no prior grant/denial. Honors
+    // FLAMESHOT_SKIP_MAC_PERMISSION_REQUEST=1 for local dev iteration.
+    bool ensureScreenCaptureAccess();
+#endif
 
     // class members
     static Origin m_origin;

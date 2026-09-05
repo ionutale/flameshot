@@ -39,6 +39,7 @@ theme:
 nav:
   - Overview: index.md
   - Debugging: debugging.md
+  - macOS dev signing: macos-dev-signing.md
   - FAQ: faq.md
   - 'Maintaining the documentation': docs.md
   - API:

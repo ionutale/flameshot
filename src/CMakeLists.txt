@@ -447,8 +447,14 @@ endif ()
 # macdeployqt
 if (APPLE)
 # Code signing settings - optional, set to empty string to skip signing
-    set(CODE_SIGN_IDENTITY "" CACHE STRING "Code signing identity (leave empty to skip signing)")
+    set(CODE_SIGN_IDENTITY "" CACHE STRING "Code signing identity (Developer ID or self-signed 'Flameshot Dev'; leave empty for ad hoc)")
     set(DMG_SIGN_IDENTITY "" CACHE STRING "DMG signing identity (leave empty to skip signing)")
+    # Bundle identifier used for --identifier so TCC can key ScreenCapture
+    # grants off a stable identifier instead of only the cdhash.
+    set(FLAMESHOT_BUNDLE_IDENTIFIER "org.flameshot.Flameshot" CACHE STRING "macOS bundle identifier used for codesigning")
+    if(NOT CODE_SIGN_IDENTITY OR CODE_SIGN_IDENTITY STREQUAL "")
+        message(STATUS "Using ad hoc signing: macOS ScreenCapture (TCC) grants are pinned to the build cdhash and will NOT survive rebuilds. For dev, create a self-signed 'Flameshot Dev' cert and configure -DCODE_SIGN_IDENTITY='Flameshot Dev'. See docs/dev/src/macos-dev-signing.md.")
+    endif()
     # Custom target to create DMG (signed or unsigned)
     add_custom_target(create_dmg
     COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../packaging/macos/create_dmg.sh 
@@ -463,17 +469,25 @@ if (APPLE)
     )
 
 # Always sign the app bundle (either with identity or ad hoc)
+    # Identity is written to a file and read by sign-dev.sh: identities like
+    # "Apple Development: x (TEAMID)" contain spaces/parens which the
+    # Makefile generator cannot safely quote in COMMAND lines.
+    set(FLAMESHOT_SIGN_IDENTITY_FILE "${CMAKE_BINARY_DIR}/flameshot-codesign-identity.txt")
+    file(WRITE "${FLAMESHOT_SIGN_IDENTITY_FILE}" "${CODE_SIGN_IDENTITY}")
     if(CODE_SIGN_IDENTITY AND NOT CODE_SIGN_IDENTITY STREQUAL "")
-        # Identity-based signing (requires Developer ID)
+        # Identity-based signing (Developer ID or self-signed dev cert).
+        # The DR then pins to the cert leaf, so TCC ScreenCapture grants
+        # survive rebuilds (unlike ad hoc, which pins to cdhash).
         add_custom_command(TARGET flameshot POST_BUILD
-            COMMAND codesign --force --deep --sign "${CODE_SIGN_IDENTITY}" 
-                    --options runtime --timestamp "$<TARGET_BUNDLE_DIR:flameshot>"
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../packaging/macos/sign-dev.sh
+                    \"$<TARGET_BUNDLE_DIR:flameshot>\" \"${FLAMESHOT_SIGN_IDENTITY_FILE}\"
             COMMENT "Code signing app bundle with ${CODE_SIGN_IDENTITY}"
         )
     else()
-        # Ad hoc signing 
+        # Ad hoc signing
         add_custom_command(TARGET flameshot POST_BUILD
-            COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:flameshot>"
+            COMMAND codesign --force --deep --sign -
+                    --identifier "${FLAMESHOT_BUNDLE_IDENTIFIER}" "$<TARGET_BUNDLE_DIR:flameshot>"
             COMMENT "Ad hoc code signing app bundle (no identity required)"
         )
     endif()
@@ -489,13 +503,14 @@ if (APPLE)
         # Re-sign after macdeployqt (it modifies the bundle)
         if(CODE_SIGN_IDENTITY AND NOT CODE_SIGN_IDENTITY STREQUAL "")
             add_custom_command(TARGET flameshot POST_BUILD
-                COMMAND codesign --force --deep --sign "${CODE_SIGN_IDENTITY}" 
-                        --options runtime --timestamp "$<TARGET_BUNDLE_DIR:flameshot>"
+                COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/../packaging/macos/sign-dev.sh
+                        \"$<TARGET_BUNDLE_DIR:flameshot>\" \"${FLAMESHOT_SIGN_IDENTITY_FILE}\"
                 COMMENT "Re-signing app bundle after Qt deployment"
             )
         else()
             add_custom_command(TARGET flameshot POST_BUILD
-                COMMAND codesign --force --deep --sign - "$<TARGET_BUNDLE_DIR:flameshot>"
+                COMMAND codesign --force --deep --sign -
+                        --identifier "${FLAMESHOT_BUNDLE_IDENTIFIER}" "$<TARGET_BUNDLE_DIR:flameshot>"
                 COMMENT "Re-signing app bundle after Qt deployment (ad hoc)"
             )
         endif()

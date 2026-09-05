@@ -35,6 +35,15 @@ void setActivationPolicyAccessory()
     setActivationPolicy(NSApplicationActivationPolicyAccessory);
 }
 
+void activateApplication()
+{
+    auto sharedApp = reinterpret_cast<id (*)(id, SEL)>(objc_msgSend);
+    auto activate = reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend);
+    id nsApp = sharedApp(reinterpret_cast<id>(objc_getClass("NSApplication")),
+                         sel_registerName("sharedApplication"));
+    activate(nsApp, sel_registerName("activateIgnoringOtherApps:"), YES);
+}
+
 constexpr const char* visibleInDockProperty = "_visibleInDock";
 
 } // namespace
@@ -88,24 +97,11 @@ Flameshot::Flameshot()
     QString StyleSheet = CaptureButton::globalStyleSheet();
     qApp->setStyleSheet(StyleSheet);
 
-#if defined(Q_OS_MACOS)
-    if (CGPreflightScreenCaptureAccess()) {
-        AbstractLogger::info() << "Screen recording permission already granted";
-    } else {
-        AbstractLogger::info()
-          << "Screen recording permission not granted, requesting...";
-        bool granted = CGRequestScreenCaptureAccess();
-        if (granted) {
-            AbstractLogger::info()
-              << "Screen recording permission granted by user";
-        } else {
-            AbstractLogger::warning()
-              << "Screen recording permission denied. "
-              << "Enable it in System Settings > Privacy & Security "
-              << "> Screen & System Audio Recording.";
-        }
-    }
-#endif
+    // NOTE: macOS ScreenCapture permission is intentionally NOT requested
+    // here. TCC grants for ad-hoc signed dev builds are pinned to the
+    // binary cdhash, so prompting at every startup re-prompts even when
+    // Settings shows an old grant as enabled. See ensureScreenCaptureAccess(),
+    // called lazily from gui()/screen()/full() only when actually capturing.
 #if (defined(Q_OS_MACOS) || defined(Q_OS_WIN))
     // Set global shortcuts for MacOS or Windows
     m_HotkeyScreenshotCapture = new QHotkey(
@@ -131,11 +127,59 @@ Flameshot* Flameshot::instance()
     return &c;
 }
 
+#if defined(Q_OS_MACOS)
+bool Flameshot::ensureScreenCaptureAccess()
+{
+    // Dev escape hatch for tight rebuild loops with ad-hoc signatures:
+    // FLAMESHOT_SKIP_MAC_PERMISSION_REQUEST=1 skips the system prompt and
+    // lets capture proceed (it will fail/return empty without a grant, but
+    // won't nag on every launch).
+    if (qgetenv("FLAMESHOT_SKIP_MAC_PERMISSION_REQUEST") == "1") {
+        AbstractLogger::info()
+          << "Skipping macOS ScreenCapture permission request "
+             "(FLAMESHOT_SKIP_MAC_PERMISSION_REQUEST=1)";
+        return true;
+    }
+    if (CGPreflightScreenCaptureAccess()) {
+        return true;
+    }
+
+    // Make the app frontmost before requesting, otherwise the TCC alert
+    // may not appear when Flameshot is running as a background daemon.
+    setActivationPolicyRegular();
+    activateApplication();
+
+    AbstractLogger::info()
+      << "Screen recording permission not granted, requesting...";
+    bool granted = CGRequestScreenCaptureAccess();
+    if (granted) {
+        AbstractLogger::info()
+          << "Screen recording permission granted by user. If captures "
+             "still come back empty, quit and relaunch Flameshot so the "
+             "grant takes effect.";
+    } else {
+        AbstractLogger::warning()
+          << "Screen recording permission denied. Enable it in System "
+             "Settings > Privacy & Security > Screen & System Audio "
+             "Recording, then quit and relaunch Flameshot. If it is "
+             "already enabled there, remove the stale entry and re-grant.";
+    }
+    return granted;
+}
+#endif
+
 CaptureWidget* Flameshot::gui(const CaptureRequest& req)
 {
     if (!resolveAnyConfigErrors()) {
         return nullptr;
     }
+
+#if defined(Q_OS_MACOS)
+    if (!ensureScreenCaptureAccess()) {
+        emit captureFailed();
+        return nullptr;
+    }
+#endif
 
 #if defined(Q_OS_MACOS)
     // This is required on MacOS because of Mission Control. If you'll switch to
@@ -198,6 +242,13 @@ void Flameshot::screen(CaptureRequest req, const int screenNumber)
         return;
     }
 
+#if defined(Q_OS_MACOS)
+    if (!ensureScreenCaptureAccess()) {
+        emit captureFailed();
+        return;
+    }
+#endif
+
     bool ok = false;
     QPixmap p;
     QRect geometry;
@@ -251,6 +302,13 @@ void Flameshot::full(const CaptureRequest& req)
     if (!resolveAnyConfigErrors()) {
         return;
     }
+
+#if defined(Q_OS_MACOS)
+    if (!ensureScreenCaptureAccess()) {
+        emit captureFailed();
+        return;
+    }
+#endif
 
     bool ok = true;
     QPixmap p(ScreenGrabber().grabFullDesktop(ok));
